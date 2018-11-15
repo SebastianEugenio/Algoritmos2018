@@ -22,6 +22,9 @@ int cantTotalVotosEnBlanco = 0;
 int cantTotalVotosNulos = 0;
 const int cantVotosMaximo = 200;
 const int cantTotalParticipantes = 65;
+const char* ARCHIVO_LISTAS = "listas.bin";
+
+
 // STRUCTS
 struct sVotos {
 	int	tipoVoto; // numero entre 1 y 7 , 0 es blanco y otro es nulo
@@ -72,10 +75,10 @@ struct sGanadores
 
 
 //PROTOTIPOS
+void inicializarLista(sListas lista);
 void inicializarListas();
-void cargarNombreNumeroListas();
-void guardarNombreNumeroLista(int numero, char nombre[cantCaracteres]);
-void cargarCandidatos();
+void cargarListas();
+void cargarCandidatos(sListas & auxLista);
 void cargarVotos();
 void procesarVotos();
 int cantVotosValidos(sListas lista, int cantVotosTotales);
@@ -90,6 +93,23 @@ void mostrarListasPorEdad();
 void setearColor(int rgb);
 void mostrarLoteDePrueba();
 
+
+// func for debug
+void mostrarLista(sListas lista){
+	
+	printf("<-------- DEBUGGING -------->\n");
+	printf("Nombre lista: %s\n",lista.nombreLista);
+	printf("numeroLista: %d\n",lista.numeroLista);
+	printf("Candidatos:\n");
+	
+ 
+	for (int f = 0; f < cantCandidatos; f++) 
+	{ 
+		printf("--> %s\n",lista.candidatos[f]);
+	}  
+}
+
+
 int main()
 {
 
@@ -97,10 +117,8 @@ int main()
 
 	inicializarListas();
 
-	cargarNombreNumeroListas();
-
-	cargarCandidatos();
-
+	cargarListas();
+/*
 	cargarVotos();
 
 	procesarVotos();
@@ -125,199 +143,55 @@ int main()
 
 
 	getchar();
+*/
 	return 0;
 }
 
-
-void cargarCandidatos()
+// carga el nombre de los 25 candidatos hechos automaticamente en la lista pasada por parametro 
+void cargarCandidatos(sListas & auxLista) 
 {
+	char auxCand[cantCaracteres];
+	int b = 0;
+	
+	for (int a = 0; a < cantCandidatos; a++)
 	{
-		strcpy(listas[0].candidatos[0], "candidato1/Lista1");
-		strcpy(listas[0].candidatos[1], "candidato2/Lista1");
-		strcpy(listas[0].candidatos[2], "candidato3/Lista1");
-		strcpy(listas[0].candidatos[3], "candidato4/Lista1");
-		strcpy(listas[0].candidatos[4], "candidato5/Lista1");
-		strcpy(listas[0].candidatos[5], "candidato6/Lista1");
-		strcpy(listas[0].candidatos[6], "candidato7/Lista1");
-		strcpy(listas[0].candidatos[7], "candidato8/Lista1");
-		strcpy(listas[0].candidatos[8], "candidato9/Lista1");
-		strcpy(listas[0].candidatos[9], "candidato10/Lista1");
-		strcpy(listas[0].candidatos[10], "candidato11/Lista1");
-		strcpy(listas[0].candidatos[11], "candidato12/Lista1");
-		strcpy(listas[0].candidatos[12], "candidato13/Lista1");
-		strcpy(listas[0].candidatos[13], "candidato14/Lista1");
-		strcpy(listas[0].candidatos[14], "candidato15/Lista1");
-		strcpy(listas[0].candidatos[15], "candidato16/Lista1");
-		strcpy(listas[0].candidatos[16], "candidato17/Lista1");
-		strcpy(listas[0].candidatos[17], "candidato18/Lista1");
-		strcpy(listas[0].candidatos[18], "candidato19/Lista1");
-		strcpy(listas[0].candidatos[19], "candidato20/Lista1");
-		strcpy(listas[0].candidatos[20], "candidato21/Lista1");
-		strcpy(listas[0].candidatos[21], "candidato22/Lista1");
-		strcpy(listas[0].candidatos[22], "candidato23/Lista1");
-		strcpy(listas[0].candidatos[23], "candidato24/Lista1");
-		strcpy(listas[0].candidatos[24], "candidato25/Lista1");
-	}
+		memset(auxCand, ' ', cantCaracteres); 
+		auxCand[cantCaracteres] = '\0'; 
+		
+		b = a+1;
+		sprintf(auxCand,"candidato%d/Lista%d",b,auxLista.numeroLista);
 
-	{
-		strcpy(listas[1].candidatos[0], "candidato1/Lista2");
-		strcpy(listas[1].candidatos[1], "candidato2/Lista2");
-		strcpy(listas[1].candidatos[2], "candidato3/Lista2");
-		strcpy(listas[1].candidatos[3], "candidato4/Lista2");
-		strcpy(listas[1].candidatos[4], "candidato5/Lista2");
-		strcpy(listas[1].candidatos[5], "candidato6/Lista2");
-		strcpy(listas[1].candidatos[6], "candidato7/Lista2");
-		strcpy(listas[1].candidatos[7], "candidato8/Lista2");
-		strcpy(listas[1].candidatos[8], "candidato9/Lista2");
-		strcpy(listas[1].candidatos[9], "candidato10/Lista2");
-		strcpy(listas[1].candidatos[10], "candidato11/Lista2");
-		strcpy(listas[1].candidatos[11], "candidato12/Lista2");
-		strcpy(listas[1].candidatos[12], "candidato13/Lista2");
-		strcpy(listas[1].candidatos[13], "candidato14/Lista2");
-		strcpy(listas[1].candidatos[14], "candidato15/Lista2");
-		strcpy(listas[1].candidatos[15], "candidato16/Lista2");
-		strcpy(listas[1].candidatos[16], "candidato17/Lista2");
-		strcpy(listas[1].candidatos[17], "candidato18/Lista2");
-		strcpy(listas[1].candidatos[18], "candidato19/Lista2");
-		strcpy(listas[1].candidatos[19], "candidato20/Lista2");
-		strcpy(listas[1].candidatos[20], "candidato21/Lista2");
-		strcpy(listas[1].candidatos[21], "candidato22/Lista2");
-		strcpy(listas[1].candidatos[22], "candidato23/Lista2");
-		strcpy(listas[1].candidatos[23], "candidato24/Lista2");
-		strcpy(listas[1].candidatos[24], "candidato25/Lista2");
-	}
-
-	{
-		strcpy(listas[2].candidatos[0], "candidato1/Lista3");
-		strcpy(listas[2].candidatos[1], "candidato2/Lista3");
-		strcpy(listas[2].candidatos[2], "candidato3/Lista3");
-		strcpy(listas[2].candidatos[3], "candidato4/Lista3");
-		strcpy(listas[2].candidatos[4], "candidato5/Lista3");
-		strcpy(listas[2].candidatos[5], "candidato6/Lista3");
-		strcpy(listas[2].candidatos[6], "candidato7/Lista3");
-		strcpy(listas[2].candidatos[7], "candidato8/Lista3");
-		strcpy(listas[2].candidatos[8], "candidato9/Lista3");
-		strcpy(listas[2].candidatos[9], "candidato10/Lista3");
-		strcpy(listas[2].candidatos[10], "candidato11/Lista3");
-		strcpy(listas[2].candidatos[11], "candidato12/Lista3");
-		strcpy(listas[2].candidatos[12], "candidato13/Lista3");
-		strcpy(listas[2].candidatos[13], "candidato14/Lista3");
-		strcpy(listas[2].candidatos[14], "candidato15/Lista3");
-		strcpy(listas[2].candidatos[15], "candidato16/Lista3");
-		strcpy(listas[2].candidatos[16], "candidato17/Lista3");
-		strcpy(listas[2].candidatos[17], "candidato18/Lista3");
-		strcpy(listas[2].candidatos[18], "candidato19/Lista3");
-		strcpy(listas[2].candidatos[19], "candidato20/Lista3");
-		strcpy(listas[2].candidatos[20], "candidato21/Lista3");
-		strcpy(listas[2].candidatos[21], "candidato22/Lista3");
-		strcpy(listas[2].candidatos[22], "candidato23/Lista3");
-		strcpy(listas[2].candidatos[23], "candidato24/Lista3");
-		strcpy(listas[2].candidatos[24], "candidato25/Lista3");
-	}
-
-	{
-		strcpy(listas[3].candidatos[0], "candidato1/Lista4");
-		strcpy(listas[3].candidatos[1], "candidato2/Lista4");
-		strcpy(listas[3].candidatos[2], "candidato3/Lista4");
-		strcpy(listas[3].candidatos[3], "candidato4/Lista4");
-		strcpy(listas[3].candidatos[4], "candidato5/Lista4");
-		strcpy(listas[3].candidatos[5], "candidato6/Lista4");
-		strcpy(listas[3].candidatos[6], "candidato7/Lista4");
-		strcpy(listas[3].candidatos[7], "candidato8/Lista4");
-		strcpy(listas[3].candidatos[8], "candidato9/Lista4");
-		strcpy(listas[3].candidatos[9], "candidato10/Lista4");
-		strcpy(listas[3].candidatos[10], "candidato11/Lista4");
-		strcpy(listas[3].candidatos[11], "candidato12/Lista4");
-		strcpy(listas[3].candidatos[12], "candidato13/Lista4");
-		strcpy(listas[3].candidatos[13], "candidato14/Lista4");
-		strcpy(listas[3].candidatos[14], "candidato15/Lista4");
-		strcpy(listas[3].candidatos[15], "candidato16/Lista4");
-		strcpy(listas[3].candidatos[16], "candidato17/Lista4");
-		strcpy(listas[3].candidatos[17], "candidato18/Lista4");
-		strcpy(listas[3].candidatos[18], "candidato19/Lista4");
-		strcpy(listas[3].candidatos[19], "candidato20/Lista4");
-		strcpy(listas[3].candidatos[20], "candidato21/Lista4");
-		strcpy(listas[3].candidatos[21], "candidato22/Lista4");
-		strcpy(listas[3].candidatos[22], "candidato23/Lista4");
-		strcpy(listas[3].candidatos[23], "candidato24/Lista4");
-		strcpy(listas[3].candidatos[24], "candidato25/Lista4");
-	}
-
-	{
-		strcpy(listas[4].candidatos[0], "candidato1/Lista5");
-		strcpy(listas[4].candidatos[1], "candidato2/Lista5");
-		strcpy(listas[4].candidatos[2], "candidato3/Lista5");
-		strcpy(listas[4].candidatos[3], "candidato4/Lista5");
-		strcpy(listas[4].candidatos[4], "candidato5/Lista5");
-		strcpy(listas[4].candidatos[5], "candidato6/Lista5");
-		strcpy(listas[4].candidatos[6], "candidato7/Lista5");
-		strcpy(listas[4].candidatos[7], "candidato8/Lista5");
-		strcpy(listas[4].candidatos[8], "candidato9/Lista5");
-		strcpy(listas[4].candidatos[9], "candidato10/Lista5");
-		strcpy(listas[4].candidatos[10], "candidato11/Lista5");
-		strcpy(listas[4].candidatos[11], "candidato12/Lista5");
-		strcpy(listas[4].candidatos[12], "candidato13/Lista5");
-		strcpy(listas[4].candidatos[13], "candidato14/Lista5");
-		strcpy(listas[4].candidatos[14], "candidato15/Lista5");
-		strcpy(listas[4].candidatos[15], "candidato16/Lista5");
-		strcpy(listas[4].candidatos[16], "candidato17/Lista5");
-		strcpy(listas[4].candidatos[17], "candidato18/Lista5");
-		strcpy(listas[4].candidatos[18], "candidato19/Lista5");
-		strcpy(listas[4].candidatos[19], "candidato20/Lista5");
-		strcpy(listas[4].candidatos[20], "candidato21/Lista5");
-		strcpy(listas[4].candidatos[21], "candidato22/Lista5");
-		strcpy(listas[4].candidatos[22], "candidato23/Lista5");
-		strcpy(listas[4].candidatos[23], "candidato24/Lista5");
-		strcpy(listas[4].candidatos[24], "candidato25/Lista5");
+		strcpy(auxLista.candidatos[a], auxCand);
 	}
 }
 
-void cargarNombreNumeroListas() {
+// Se guardan en un archivo los datos de todas las listas.
+void cargarListas()
+{
+	sListas auxLista;
 
-	char nomLista1[cantCaracteres] = "BLANCA";
-	char nomLista2[cantCaracteres] = "VERDE";
-	char nomLista3[cantCaracteres] = "ROJA";
-	char nomLista4[cantCaracteres] = "AZUL";
-	char nomLista5[cantCaracteres] = "VIOLETA";
+	FILE * a = fopen(ARCHIVO_LISTAS,"wb");
 
-	guardarNombreNumeroLista(1, nomLista1);
+	for (int i = 0; i < cantListas; i++)
+	{		
+		// Inicializamos la lista auxiliar en cada vuelta para vaciarla antes de cargarle datos
+		inicializarLista(auxLista);
+		
+		auxLista.numeroLista = i+1;
+		
+		switch(i){
+			case 0: strcpy(auxLista.nombreLista,"BLANCA"); break;
+			case 1: strcpy(auxLista.nombreLista,"VERDE"); break;
+			case 2: strcpy(auxLista.nombreLista,"ROJA"); break;
+			case 3: strcpy(auxLista.nombreLista,"AZUL"); break;
+			case 4: strcpy(auxLista.nombreLista,"VIOLETA"); break;
+		}
 
-	guardarNombreNumeroLista(2, nomLista2);
-
-	guardarNombreNumeroLista(3, nomLista3);
-
-	guardarNombreNumeroLista(4, nomLista4);
-
-	guardarNombreNumeroLista(5, nomLista5);
-
-}
-
-// Carga numero y nombre de lista en la lista que se pasa
-void guardarNombreNumeroLista(int numero, char nombre[cantCaracteres]) {
-
-	switch (numero)
-	{
-	case 1:
-		listas[0].numeroLista = numero;
-		strcpy(listas[0].nombreLista, nombre);
-		break;
-	case 2:
-		listas[1].numeroLista = numero;
-		strcpy(listas[1].nombreLista, nombre);
-		break;
-	case 3:
-		listas[2].numeroLista = numero;
-		strcpy(listas[2].nombreLista, nombre);
-		break;
-	case 4:
-		listas[3].numeroLista = numero;
-		strcpy(listas[3].nombreLista, nombre);
-		break;
-	case 5:
-		listas[4].numeroLista = numero;
-		strcpy(listas[4].nombreLista, nombre);
-		break;
+		cargarCandidatos(auxLista);
+		
+		fwrite(&auxLista,sizeof(sListas),1,a);
 	}
+	fclose(a);
 }
 
 void procesarVotos() {
@@ -861,18 +735,38 @@ void mostrarTabla()
 	cout << "+----------+------+-------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+--------------------+\n";
 
 }
+void inicializarLista(sListas lista)
+{
+	memset(lista.nombreLista, ' ', cantCaracteres); 
+	lista.nombreLista[cantCaracteres] = '\0'; 
+	lista.hasta18 = 0; 
+	lista.hasta30 = 0; 
+	lista.hasta50 = 0; 
+	lista.mas50 = 0; 
+	lista.cantVotosTotales = 0; 
+	lista.cantVotosValidos = 0; 
+	lista.numeroLista = 0; 
+	lista.porcentajeVotosValidos = 0; 
+ 
+	for (int f = 0; f < cantCandidatos; f++) 
+	{ 
+		memset(lista.candidatos[f], ' ', cantCaracteres); 
+		lista.candidatos[f][cantCaracteres] = '\0'; 
+	} 
+	for (int j = 0; j < cantVotosMaximo; j++) 
+	{ 
+		lista.infoVotos[j].tipoVoto = 0; 
+		lista.infoVotos[j].edad = 0; 
+		 
+		memset(lista.infoVotos[j].sexo, ' ', cantCaracteres); 
+		lista.infoVotos[j].sexo[cantCaracteres] = '\0'; 
+	} 
+}
 void inicializarListas()
 {
 	for (int i = 0; i < cantListas; i++)
 	{
-		listas[i].hasta18 = 0;
-		listas[i].hasta30 = 0;
-		listas[i].hasta50 = 0;
-		listas[i].mas50 = 0;
-		listas[i].cantVotosTotales = 0;
-		listas[i].cantVotosValidos = 0;
-		listas[i].numeroLista = 0;
-		listas[i].porcentajeVotosValidos = 0;
+		inicializarLista(listas[i]); 
 	}
 }
 

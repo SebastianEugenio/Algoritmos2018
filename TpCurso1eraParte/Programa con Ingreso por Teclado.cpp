@@ -21,6 +21,8 @@ int cantTotalVotosEnBlanco = 0;
 int cantTotalVotosNulos = 0;
 const int cantVotosMaximo = 200;
 const int cantTotalParticipantes = 65;
+const char* ARCHIVO_LISTAS = "listas.bin";
+
 
 // STRUCTS
 struct sVotos {
@@ -37,10 +39,10 @@ struct sListas {
 	int cantVotosTotales;
 	int cantVotosValidos;
 	int porcentajeVotosValidos;
-	int hasta18; //cantidad de votos de menores de 18 años
+	int hasta18; //cantidad de votos de menores de 18 aï¿½os
 	int hasta30; //cantidad de votos > 18 y < 30
 	int hasta50; //cantidad de votos > 30 y < 50
-	int mas50; //cantidad de votos mayores de 50 años;
+	int mas50; //cantidad de votos mayores de 50 aï¿½os;
 }listas[cantListas];
 
 
@@ -72,10 +74,10 @@ struct sGanadores
 
 
 //PROTOTIPOS
+void inicializarLista(sListas lista);
 void inicializarListas();
-void cargarNombreNumeroListas();
-void guardarNombreNumeroLista(int numero, char nombre[cantCaracteres]);
-void cargarCandidatos();
+void cargarListas();
+void cargarCandidatos(sListas & auxLista);
 void cargarVotos();
 void procesarVotos();
 int cantVotosValidos(sListas lista, int cantVotosTotales);
@@ -88,15 +90,28 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
 void mostrarListasPorEdad();
 void setearColor(int rgb);
 
+// func for debug 
+void mostrarLista(sListas lista){ 
+	 
+	printf("<-------- DEBUGGING -------->\n"); 
+	printf("Nombre lista: %s\n",lista.nombreLista); 
+	printf("numeroLista: %d\n",lista.numeroLista); 
+	printf("Candidatos:\n"); 
+	 
+  
+	for (int f = 0; f < cantCandidatos; f++)  
+	{  
+		printf("--> %s\n",lista.candidatos[f]); 
+	}   
+} 
+
 int main()
 {
 	setlocale(LC_ALL, ""); //habilita caracteres latinos
 
 	inicializarListas();
 
-	cargarNombreNumeroListas();
-
-	cargarCandidatos();
+	cargarListas();
 
 	cargarVotos();
 
@@ -121,83 +136,82 @@ int main()
 	return 0;
 }
 
+void inicializarLista(sListas lista) {
+	memset(lista.nombreLista, ' ', cantCaracteres);
+	lista.nombreLista[cantCaracteres] = '\0';
+	lista.hasta18 = 0;
+	lista.hasta30 = 0;
+	lista.hasta50 = 0;
+	lista.mas50 = 0;
+	lista.cantVotosTotales = 0;
+	lista.cantVotosValidos = 0;
+	lista.numeroLista = 0;
+	lista.porcentajeVotosValidos = 0;
+
+	for (int f = 0; f < cantCandidatos; f++)
+	{
+		memset(lista.candidatos[f], ' ', cantCaracteres);
+		lista.candidatos[f][cantCaracteres] = '\0';
+	}
+	for (int j = 0; j < cantVotosMaximo; j++)
+	{
+		lista.infoVotos[j].tipoVoto = 0;
+		lista.infoVotos[j].edad = 0;
+		
+		memset(lista.infoVotos[j].sexo, ' ', cantCaracteres);
+		lista.infoVotos[j].sexo[cantCaracteres] = '\0';
+	}
+}
+
 void inicializarListas()
 {
 	for (int i = 0; i < cantListas; i++)
 	{
-		listas[i].hasta18 = 0;
-		listas[i].hasta30 = 0;
-		listas[i].hasta50 = 0;
-		listas[i].mas50 = 0;
-		listas[i].cantVotosTotales = 0;
-		listas[i].cantVotosValidos = 0;
-		listas[i].numeroLista = 0;
-		listas[i].porcentajeVotosValidos = 0;
+		inicializarLista(listas[i]);
 	}
 }
 
-// carga el nombre de los 25 candidatos ingresados por teclado en cada lista
-void cargarCandidatos()
+// carga el nombre de los 25 candidatos ingresados por teclado en la lista pasada por parametro
+void cargarCandidatos(sListas & auxLista)
 {
-	for (int i = 0; i < cantListas; i++) {
-		for (int j = 0; j < cantCandidatos; j++)
-		{
-			
-			cout << endl<<"Ingrese el Nombre del Candidato " << j + 1 << " de la Lista numero " << listas[i].numeroLista << " " << listas[i].nombreLista << ": ";
-			
-			cin.getline(listas[i].candidatos[j], cantCaracteres);
-		}
+	for (int j = 0; j < cantCandidatos; j++)
+	{
+		
+		cout << endl<<"Ingrese el Nombre del Candidato " << j + 1 << " de la Lista:";
+		
+		cin.getline(auxLista.candidatos[j], cantCaracteres);
 	}
 }
 
-// carga el nombre y el numero de cada lista ingresado por teclado
-void cargarNombreNumeroListas()
+// Pide por consola que ingrese los datos de todas las listas
+// y lo guarda en un archivo
+void cargarListas()
 {
-	int numLista = 0;
-	char nomLista[cantCaracteres];
+	sListas auxLista;
+
+	FILE * a = fopen(ARCHIVO_LISTAS,"wb");
 
 	for (int i = 0; i < cantListas; i++)
 	{		
-		cout << endl << "Ingrese Número de Lista: ";
-		cin >> numLista;
+		// Inicializamos la lista auxiliar en cada vuelta para vaciarla antes de cargarle datos
+		inicializarLista(auxLista);
+		
+		cout << endl << "Ingrese Numero de Lista: ";
+		cin >> auxLista.numeroLista;
 
 		cin.ignore(); // para el cin anterior no interfiera con el getline
 
-		cout << endl<< "Ingrese Nombre de Lista "<< numLista << ": ";
+		cout << endl<< "Ingrese Nombre de Lista "<< auxLista.numeroLista << ": ";
 		
-		cin.getline(nomLista, cantCaracteres);
+		cin.getline(auxLista.nombreLista, cantCaracteres);
 
+		cargarCandidatos(auxLista);
+		
+		mostrarLista(auxLista);
 
-		guardarNombreNumeroLista(numLista, nomLista);
+		fwrite(&auxLista,sizeof(sListas),1,a);
 	}
-}
-
-// Carga numero y nombre de lista en la lista que se pasa
-void guardarNombreNumeroLista(int numero, char nombre[cantCaracteres]) {
-
-	switch (numero)
-	{
-	case 1:
-		listas[0].numeroLista = numero;
-		strcpy(listas[0].nombreLista, nombre);
-		break;
-	case 2:
-		listas[1].numeroLista = numero;
-		strcpy(listas[1].nombreLista, nombre);
-		break;
-	case 3:
-		listas[2].numeroLista = numero;
-		strcpy(listas[2].nombreLista, nombre);
-		break;
-	case 4:
-		listas[3].numeroLista = numero;
-		strcpy(listas[3].nombreLista, nombre);
-		break;
-	case 5:
-		listas[4].numeroLista = numero;
-		strcpy(listas[4].nombreLista, nombre);
-		break;
-	}
+	fclose(a);
 }
 
 void cargarVotos()
@@ -209,12 +223,12 @@ void cargarVotos()
 	}
 	for (int i = 0; i < cantListas; i++)
 	{
-		cout << endl << "Ingrese la Información de los " << listas[i].cantVotosTotales << "Votos de la lista " << listas[i].nombreLista<<": ";
+		cout << endl << "Ingrese la Informaciï¿½n de los " << listas[i].cantVotosTotales << "Votos de la lista " << listas[i].nombreLista<<": ";
 
 		for (int j = 0; j < listas[i].cantVotosTotales; j++)
 		{
 			cout << endl << "Voto " << j + 1 << ": ";
-			cout << endl << "Ingrese el tipo de Voto (0 para voto en Blanco, de 1 a 7 para Válido y otro para Nulo): ";
+			cout << endl << "Ingrese el tipo de Voto (0 para voto en Blanco, de 1 a 7 para Vï¿½lido y otro para Nulo): ";
 			cin >> listas[i].infoVotos[j].tipoVoto;
 			
 			cin.ignore(); // para el cin anterior no interfiera con el getline
@@ -222,7 +236,7 @@ void cargarVotos()
 			
 			cin.getline(listas[i].infoVotos[j].sexo, cantCaracteres);
 
-			cout << endl << "Ingrese la Edad del Votante en años: " ;
+			cout << endl << "Ingrese la Edad del Votante en aï¿½os: " ;
 			cin >> listas[i].infoVotos[j].edad;
 		}
 	}			
@@ -329,7 +343,7 @@ void mostrarTabla()
 	printf("|%-10s|%-6s|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 		"",
 		"Votos",
-		"Válidos",
+		"Vï¿½lidos",
 		"1",
 		"2",
 		"3",
@@ -496,10 +510,10 @@ void mostrarListasPorEdad()
 		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", listas[i].numeroLista, listas[i].nombreLista);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		setearColor(7);
-		printf("| %61s | %58d |\n", "Cantidad votos de menores de 18 años", listas[i].hasta18);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 18 y menores o iguales a 30 años", listas[i].hasta30);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 30 y menores o iguales a 50 años", listas[i].hasta50);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 50 años", listas[i].mas50);
+		printf("| %61s | %58d |\n", "Cantidad votos de menores de 18 aï¿½os", listas[i].hasta18);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 18 y menores o iguales a 30 aï¿½os", listas[i].hasta30);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 30 y menores o iguales a 50 aï¿½os", listas[i].hasta50);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 50 aï¿½os", listas[i].mas50);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 	}
 
