@@ -13,8 +13,8 @@ using namespace std;
 
 //VARIABLES GLOBALES
 const int cantCaracteres = 30;
-const int cantCandidatos = 2;
-const int cantListas = 1;
+const int cantCandidatos = 25;
+const int cantListas = 5;
 const int cantBancas = 13;
 int cantTotalVotosValidos = 0;
 int cantTotalVotosEnBlanco = 0;
@@ -74,14 +74,18 @@ struct sGanadores
 
 
 //PROTOTIPOS
-void inicializarLista(sListas lista);
+void inicializarGanador(sGanadores & ganador);
+void inicializarGanadores();
+void inicializarBanca(sBancas & banca);
+void inicializarBancas();
+void inicializarVoto(sVotos & voto);
+void inicializarLista(sListas & lista);
 void inicializarListas();
 void cargarListas();
 void cargarCandidatos(sListas & auxLista);
 void cargarVotos();
+void leerListas();
 void procesarVotos();
-int cantVotosValidos(sListas lista, int cantVotosTotales);
-int calcularPorcentajeVotosValidos(int cantValidos, int cantTotal);
 void asignarBancas(sListas lista);
 void ordenarListas(sListas lista[cantListas]);
 void mostrarTabla();
@@ -96,6 +100,15 @@ void mostrarLista(sListas lista){
 	printf("<-------- DEBUGGING -------->\n"); 
 	printf("Nombre lista: %s\n",lista.nombreLista); 
 	printf("numeroLista: %d\n",lista.numeroLista); 
+	printf("votos tot: %d\n",lista.cantVotosTotales); 
+	printf("votos val: %d\n",lista.cantVotosValidos); 
+	printf("% votos val: %d\n",lista.porcentajeVotosValidos); 
+	printf("votos hasta 18: %d\n",lista.hasta18); 
+	printf("votos hasta 30: %d\n",lista.hasta30); 
+	printf("votos hasta 50: %d\n",lista.hasta50); 
+	printf("votos mas de 50: %d\n",lista.mas50); 
+	
+	
 	printf("Candidatos:\n"); 
 	 
   
@@ -104,6 +117,12 @@ void mostrarLista(sListas lista){
 		printf("--> %s\n",lista.candidatos[f]); 
 	}   
 } 
+void mostrarVoto(sVotos voto){
+	printf("Voto lista: %d\n",voto.numeroLista);
+	printf("Voto tipo: %d\n",voto.tipoVoto);
+	printf("Voto sexo: %s\n",voto.sexo);
+	printf("Voto edad: %d\n",voto.edad);
+}
 void mostrarArchivos(){ 
 
 	sListas lista;
@@ -115,15 +134,7 @@ void mostrarArchivos(){
 	fread(&lista,sizeof(sListas),1,a);
 	while(!feof(a)){
 		
-		printf("Nombre lista: %s\n",lista.nombreLista); 
-		printf("numeroLista: %d\n",lista.numeroLista); 
-		printf("Candidatos:\n"); 
-		 
-	  
-		for (int f = 0; f < cantCandidatos; f++)  
-		{  
-			printf("--> %s\n",lista.candidatos[f]); 
-		}
+		mostrarLista(lista);
 		
 		fread(&lista,sizeof(sListas),1,a);
 	}
@@ -137,10 +148,7 @@ void mostrarArchivos(){
 	fread(&voto,sizeof(sVotos),1,b);
 	while(!feof(b)){
 		
-		printf("Voto lista: %d\n",voto.numeroLista);
-		printf("Voto tipo: %d\n",voto.tipoVoto);
-		printf("Voto sexo: %s\n",voto.sexo);
-		printf("Voto edad: %d\n",voto.edad);
+		mostrarVoto(voto);
 		
 		fread(&voto,sizeof(sVotos),1,b);
 	}
@@ -148,7 +156,7 @@ void mostrarArchivos(){
 } 
 
 int main()
-{
+{	
 	setlocale(LC_ALL, ""); //habilita caracteres latinos
 
 	inicializarListas();
@@ -156,9 +164,7 @@ int main()
 	cargarListas();
 
 	cargarVotos();
-	
-	mostrarArchivos(); // for debug
-/*
+
 	procesarVotos();
 
 	for (int i = 0; i < cantListas; i++)
@@ -177,11 +183,52 @@ int main()
 	mostrarListasPorEdad();
 
 	system("pause");
-*/
+
 	return 0;
 }
 
-void inicializarLista(sListas lista) {
+void inicializarGanador(sGanadores & ganador) {
+	ganador.numBanca = 0;
+	ganador.numLista = 0;
+	ganador.cantVotos = 0;
+	memset(ganador.candidato, ' ', cantCaracteres);
+	ganador.candidato[cantCaracteres] = '\0';
+}
+void inicializarGanadores() {
+	for(int i=0; i<cantTotalParticipantes; i++) {
+		inicializarGanador(ganadores[i]);
+	}
+}
+void inicializarVoto(sVotos & voto) {
+	voto.numeroLista = 0;
+	voto.tipoVoto = 0;
+	
+	memset(voto.sexo, ' ', cantCaracteres);
+	voto.sexo[cantCaracteres] = '\0';
+	
+	voto.edad = 0;
+}
+void inicializarBanca(sBancas & banca) {
+	banca.cantBanca1 = 0;
+	banca.cantBanca2 = 0;
+	banca.cantBanca3 = 0;
+	banca.cantBanca4 = 0;
+	banca.cantBanca5 = 0;
+	banca.cantBanca6 = 0;
+	banca.cantBanca7 = 0;
+	banca.cantBanca8 = 0;
+	banca.cantBanca9 = 0;
+	banca.cantBanca10 = 0;
+	banca.cantBanca11 = 0;
+	banca.cantBanca12 = 0;
+	banca.cantBanca13 = 0;
+}
+void inicializarBancas() {
+	for(int i=0; i<cantListas; i++){
+		inicializarBanca(bancas[i]);
+	}
+}
+void inicializarLista(sListas & lista) {
 	memset(lista.nombreLista, ' ', cantCaracteres);
 	lista.nombreLista[cantCaracteres] = '\0';
 	lista.hasta18 = 0;
@@ -199,9 +246,7 @@ void inicializarLista(sListas lista) {
 		lista.candidatos[f][cantCaracteres] = '\0';
 	}
 }
-
-void inicializarListas()
-{
+void inicializarListas(){
 	for (int i = 0; i < cantListas; i++)
 	{
 		inicializarLista(listas[i]);
@@ -233,10 +278,7 @@ void cargarListas()
 		// Inicializamos la lista auxiliar en cada vuelta para vaciarla antes de cargarle datos
 		inicializarLista(auxLista);
 		
-		cout << endl << "Ingrese Numero de Lista: ";
-		cin >> auxLista.numeroLista;
-
-		cin.ignore(); // para el cin anterior no interfiera con el getline
+		auxLista.numeroLista = i+1;
 
 		cout << endl<< "Ingrese Nombre de Lista "<< auxLista.numeroLista << ": ";
 		
@@ -258,12 +300,15 @@ void cargarVotos()
 	// Ingreso tipo, sexo y edad de cada voto. Para cada lista
 	for (int i = 0; i < cantListas; i++)
 	{		
-		printf("Votos para la Lista %d\n",i+1);
+		inicializarVoto(voto);
+		printf("\n#############################\n");
+		printf("### Votos para la Lista %d ###\n",i+1);
+		printf("#############################\n");
 		
 		while(voto.tipoVoto != 99) {
 			// Inicializo el voto en cada vuelta para limpiarlo.
 			voto.tipoVoto = 0;
-			voto.numeroLista = i;
+			voto.numeroLista = i+1;
 			voto.edad = 0;
 			memset(voto.sexo,' ',cantCaracteres);
 			voto.sexo[cantCaracteres] = '\0';
@@ -296,57 +341,82 @@ void cargarVotos()
 	}
 	fclose(a);	
 }
-/*
+
+// Guarda en un arreglo las listas desde un archivo
+void leerListas()
+{
+	sListas lista;
+	
+	// leer archivo LISTAS
+	FILE *a = fopen(ARCHIVO_LISTAS,"rb");
+	
+	fread(&lista,sizeof(sListas),1,a);
+	
+	while(!feof(a)){
+		
+		// Guardo en arreglo global la informacion del archivo
+		listas[lista.numeroLista-1] = lista;		
+		
+		fread(&lista,sizeof(sListas),1,a);
+	}
+	
+	fclose(a);
+}
+
 // calcula los votos validos de cada lista, del total de listas y porcentaje
 void procesarVotos()
 {
+	leerListas();
+	
+	sVotos voto;
+	
+	// leer archivo votos
+	FILE *a = fopen(ARCHIVO_VOTOS,"rb");
+	
+	fread(&voto,sizeof(sVotos),1,a);
+	
+	while(!feof(a)){
+		
+		// procesar votos totales por lista.
+		listas[voto.numeroLista-1].cantVotosTotales++;
+		
+		// Proceso de votos validos
+		if (voto.tipoVoto >= 1 && voto.tipoVoto <= 7) {
+			listas[voto.numeroLista-1].cantVotosValidos++;
+			
+			// guardar en variable global cantTotalVotosValidos
+			cantTotalVotosValidos++;
+			
+			// guardo edades
+			if(voto.edad < 18) listas[voto.numeroLista-1].hasta18++;
+			if(voto.edad >= 18 && voto.edad < 30) listas[voto.numeroLista-1].hasta30++;
+			if(voto.edad >= 30 && voto.edad < 50) listas[voto.numeroLista-1].hasta50++;
+			if(voto.edad >= 50) listas[voto.numeroLista-1].mas50++;
+			
+		} else {
+		
+			// Proceso votos en blanco
+			if (voto.tipoVoto == 0) {
+				cantTotalVotosEnBlanco++;
+			}
+			
+			// Proceso votos nulos
+			if (voto.tipoVoto < 0 || voto.tipoVoto > 7) {
+				cantTotalVotosNulos++;
+			}
+			
+		}
+		
+		fread(&voto,sizeof(sVotos),1,a);
+	}
+	
+	fclose(a);
+	
+	// Proceso porcentaje de votos por lista.
 	for (int i = 0; i < cantListas; i++)
 	{
-		listas[i].cantVotosValidos = cantVotosValidos(listas[i], listas[i].cantVotosTotales);
+		listas[i].porcentajeVotosValidos = (100 * listas[i].cantVotosValidos) / cantTotalVotosValidos;
 	}
-
-	for (int i = 0; i < cantListas; i++)
-	{
-		cantTotalVotosValidos = cantTotalVotosValidos + listas[i].cantVotosValidos;
-	}
-
-	for (int i = 0; i < cantListas; i++)
-	{
-		listas[i].porcentajeVotosValidos = calcularPorcentajeVotosValidos(listas[i].cantVotosValidos, cantTotalVotosValidos);
-	}
-}
-
-// Recibe una lista para usar el tipoVoto de cada propiedad infoVoto y cantidad de votos
-// Devuelve cantidad de votos validos
-int cantVotosValidos(sListas lista, int cantVotosTotales) 
-{
-	int cantValidos = 0;
-
-	for (int i = 0; i < cantVotosTotales; i++)
-	{
-		if (lista.infoVotos[i].tipoVoto >= 1 && lista.infoVotos[i].tipoVoto <= 7) // si es valido
-		{
-			cantValidos++;
-
-		}
-		if (lista.infoVotos[i].tipoVoto == 0) // si es en blanco
-		{
-			cantTotalVotosEnBlanco++;
-		}
-		if (lista.infoVotos[i].tipoVoto < 0 || lista.infoVotos[i].tipoVoto > 7) // si es nulo
-		{
-			cantTotalVotosNulos++;
-		}
-	}
-
-	return cantValidos;
-}
-
-int calcularPorcentajeVotosValidos(int cantValidos, int cantTotal) {
-
-	int porcentajeValidos = (100 * cantValidos) / cantTotal;
-
-	return porcentajeValidos;
 }
 
 void asignarBancas(sListas lista) {
@@ -452,23 +522,26 @@ void mostrarTabla()
 	}
 	printf("|%-10s|%-6d|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 		"VOTOS EN", cantTotalVotosEnBlanco, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
-	printf("|%-10s|%-6S|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
+	printf("|%-10s|%-6s|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 		"BLANCO", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 	cout << "+----------+------+-------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+--------------------+\n";
 	printf("|%-10s|%-6d|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 		"VOTOS", cantTotalVotosNulos, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
-	printf("|%-10s|%-6S|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
+	printf("|%-10s|%-6s|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 		"NULOS", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 	cout << "+----------+------+-------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+--------------------+\n";
 
 }
 
+
 //  metodo burbuja para ordenar de mayor a menor
 void ordenarListas(sListas lista[cantListas]) 
 {
 	sListas temporal;
+	inicializarLista(temporal);
 
 	sBancas temporalBancas;
+	inicializarBanca(temporalBancas);
 
 	for (int i = 0; i < cantListas; i++) {
 		for (int j = 0; j < cantListas - 1; j++) {
@@ -490,6 +563,7 @@ void ordenarListas(sListas lista[cantListas])
 void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]) 
 {
 	sGanadores temporal;
+	inicializarGanador(temporal);
 
 	for (int i = 0;i < cantTotalParticipantes; i++) {
 		for (int j = 0; j < cantTotalParticipantes - 1; j++) {
@@ -504,6 +578,7 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes])
 
 void guardarParticipantes()
 {
+	inicializarGanadores();
 	int numBancas = 0;
 	int numLista = 0;
 	int j = 1;
@@ -542,18 +617,6 @@ void guardarParticipantes()
 
 void mostrarListasPorEdad()
 {
-	for (int i = 0; i < cantListas; i++)
-	{
-		for (int j = 0; j < listas[i].cantVotosTotales; j++)
-		{
-			if (listas[i].infoVotos[j].edad <= 18) listas[i].hasta18++;
-			else if (listas[i].infoVotos[j].edad > 18 && listas[i].infoVotos[j].edad <= 30) listas[i].hasta30++;
-			else if (listas[i].infoVotos[j].edad > 30 && listas[i].infoVotos[j].edad <= 50) listas[i].hasta50++;
-			else if (listas[i].infoVotos[j].edad > 50) listas[i].mas50++;
-		}
-
-	}
-
 	setearColor(6);
 	cout << "\n\n+----------------------------------------------------------------------------------------------------------------------------+\n";
 	cout << "|                                           CANTIDAD DE VOTOS POR RANGO DE EDADES                                            |\n";
@@ -581,7 +644,7 @@ void setearColor(int rgb)
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), rgb);
 }
 
-*/
+
 
 
 
