@@ -24,7 +24,18 @@ const int cantTotalParticipantes = 65;
 const char* ARCHIVO_LISTAS = "listas.bin";
 const char* ARCHIVO_VOTOS = "votos.bin";
 
-
+//LISTAS ENLAZADAS
+struct nodoListasVotadas //lista con sublista
+{
+	sListas lista;
+	nodoVotos *infoVoto;
+	nodoListasVotadas *siguiente;
+};
+struct nodoVotos //sublista
+{
+	sVotos voto;
+	nodoVotos *siguiente;
+};
 // STRUCTS
 struct sVotos {
 	int numeroLista;
@@ -40,12 +51,11 @@ struct sListas {
 	int cantVotosTotales;
 	int cantVotosValidos;
 	int porcentajeVotosValidos;
-	int hasta18; //cantidad de votos de menores de 18 a�os
+	int hasta18; //cantidad de votos de menores de 18 aï¿½os
 	int hasta30; //cantidad de votos > 18 y < 30
 	int hasta50; //cantidad de votos > 30 y < 50
-	int mas50; //cantidad de votos mayores de 50 a�os;
+	int mas50; //cantidad de votos mayores de 50 aï¿½os;
 }listas[cantListas];
-
 
 struct sBancas
 {
@@ -190,6 +200,60 @@ int main()
 
 	return 0;
 }
+
+//METODOS LISTAS ENLAZADAS
+
+void buscarLista(nodoListasVotadas *lista, int numLista)
+{
+	bool existe = false;
+	nodoListasVotadas *actual = new nodoListasVotadas();
+	actual = lista;
+
+	while (actual != NULL)
+	{
+		if (actual->lista.numeroLista == numLista)
+		{
+			existe = true;
+		}
+		actual = actual->siguiente;
+	}
+	existe == true ? cout << "Elemento " << numLista << "existe\numLista" : cout << "Elemento " << numLista << "no existe\n";
+}
+void mostrarLista(nodoListasVotadas *lista)
+{
+	nodoListasVotadas *actual = new nodoListasVotadas();
+	actual = lista;
+	while (actual != NULL)
+	{
+		cout << actual->lista.nombreLista << " -> ";
+		actual = actual->siguiente;
+	}
+}
+void insertarLista(nodoListasVotadas *&lista, sListas sLista)
+{
+	nodoListasVotadas *nuevoNodo = new nodoListasVotadas();
+	nuevoNodo->lista = sLista;
+
+	nodoListasVotadas *aux1 = lista;
+	nodoListasVotadas *aux2;
+
+	while (aux1 != NULL)
+	{
+		aux2 = aux1;
+		aux1 = aux1->siguiente;
+	}
+	if (lista == aux1)
+	{
+		lista = nuevoNodo;
+	}
+	else
+	{
+		aux2->siguiente = nuevoNodo;
+	}
+
+	nuevoNodo->siguiente = aux1;
+}
+//////////
 
 void inicializarGanador(sGanadores & ganador) {
 	ganador.numBanca = 0;
@@ -935,7 +999,7 @@ void mostrarLoteDePrueba()
 	cout << "|                                                         LOTE DE PRUEBA                                                     |\n";
 
 	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-	cout << "|                SE INGRES� EL NOMBRE, EL NUMERO DE LISTA Y EL NOMBRE DE LOS 25 CANDIDATOS EN EL SIGUIENTE ORDEN:            |\n";
+	cout << "|                SE INGRESÓ EL NOMBRE, EL NUMERO DE LISTA Y EL NOMBRE DE LOS 25 CANDIDATOS EN EL SIGUIENTE ORDEN:            |\n";
 	for (int i = 0; i < cantListas; i++)
 	{
 		setearColor(6);
@@ -945,7 +1009,7 @@ void mostrarLoteDePrueba()
 		setearColor(7);
 		for (int j = 0; j < cantCandidatos; j++)
 		{
-			printf("|%59s %-2d | %58s |\n", "Nombre del Candidato n�",j+1, listas[i].candidatos[j]);
+			printf("|%59s %-2d | %58s |\n", "Nombre del Candidato n°",j+1, listas[i].candidatos[j]);
 		}
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 	}
@@ -953,7 +1017,7 @@ void mostrarLoteDePrueba()
 	
 	setearColor(6);
 	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-	cout << "|                                             INFORMACI�N DE VOTOS INGRESADOS:                                               |\n";
+	cout << "|                                             INFORMACIÓN DE VOTOS INGRESADOS:                                               |\n";
 	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 	for (int i = 0; i < cantListas; i++)
 	{
@@ -962,12 +1026,12 @@ void mostrarLoteDePrueba()
 		printf("| Numero de Lista |   %-43d|    Nombre de Lista |  %-36s|\n", listas[i].numeroLista, listas[i].nombreLista);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-		printf("| Cantidad de Votos Ingresados |   %-30d| Cantidad de Votos V�lidos |  %-29d|\n", listas[i].cantVotosTotales, listas[i].cantVotosValidos);
+		printf("| Cantidad de Votos Ingresados |   %-30d| Cantidad de Votos Válidos |  %-29d|\n", listas[i].cantVotosTotales, listas[i].cantVotosValidos);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		setearColor(7);
 		for (int j = 0; j < listas[i].cantVotosTotales; j++)
 		{
-			printf("|%28s %-3d : %28d |%28s :%28d |\n", "Voto n�", j + 1, votos[j].tipoVoto,"Edad del Votante", votos[j].edad);
+			printf("|%28s %-3d : %28d |%28s :%28d |\n", "Voto n°", j + 1, votos[j].tipoVoto,"Edad del Votante", votos[j].edad);
 		}
 		
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
