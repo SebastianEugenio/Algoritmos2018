@@ -28,12 +28,14 @@ const char* ARCHIVO_VOTOS = "votos.bin";
 struct nodoListasVotadas //lista con sublista
 {
 	sListas lista;
+	int clave; // usamos el num_lista como clave
 	nodoVotos *infoVoto;
 	nodoListasVotadas *siguiente;
 };
 struct nodoVotos //sublista
 {
 	sVotos voto;
+	int clave; // usamos la edad como clave
 	nodoVotos *siguiente;
 };
 // STRUCTS
@@ -105,6 +107,8 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
 void mostrarListasPorEdad();
 void setearColor(int rgb);
 void mostrarLoteDePrueba();
+// PROTOTIPOS LISTAS ENLAZADAS
+bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
 
 // func for debug 
 void mostrarLista(sListas lista){ 
@@ -203,22 +207,23 @@ int main()
 
 //METODOS LISTAS ENLAZADAS
 
-void buscarLista(nodoListasVotadas *lista, int numLista)
+bool buscarLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
 {
-	bool existe = false;
-	nodoListasVotadas *actual = new nodoListasVotadas();
-	actual = lista;
+	nodoListasVotadas *actual = raiz;
 
-	while (actual != NULL)
+	while (actual != NULL && actual->clave != clave)
 	{
-		if (actual->lista.numeroLista == numLista)
-		{
-			existe = true;
-		}
 		actual = actual->siguiente;
 	}
-	existe == true ? cout << "Elemento " << numLista << "existe\numLista" : cout << "Elemento " << numLista << "no existe\n";
+	
+	if(actual == NULL){
+		return false;
+	} else {
+		aux = actual;
+		return true;
+	}
 }
+
 void mostrarLista(nodoListasVotadas *lista)
 {
 	nodoListasVotadas *actual = new nodoListasVotadas();
