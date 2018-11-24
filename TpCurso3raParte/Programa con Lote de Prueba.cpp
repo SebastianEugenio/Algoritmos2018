@@ -24,20 +24,6 @@ const int cantTotalParticipantes = 65;
 const char* ARCHIVO_LISTAS = "listas.bin";
 const char* ARCHIVO_VOTOS = "votos.bin";
 
-//LISTAS ENLAZADAS
-struct nodoListasVotadas //lista con sublista
-{
-	sListas lista;
-	int clave; // usamos el num_lista como clave
-	nodoVotos *infoVoto;
-	nodoListasVotadas *siguiente;
-};
-struct nodoVotos //sublista
-{
-	sVotos voto;
-	int clave; // usamos la edad como clave
-	nodoVotos *siguiente;
-};
 // STRUCTS
 struct sVotos {
 	int numeroLista;
@@ -84,6 +70,21 @@ struct sGanadores
 	int cantVotos;
 	char candidato[cantCaracteres];
 }ganadores[cantTotalParticipantes];
+
+//LISTAS ENLAZADAS
+struct nodoVotos //sublista
+{
+	sVotos voto;
+	int clave; // usamos la edad como clave
+	nodoVotos *siguiente;
+};
+struct nodoListasVotadas //lista con sublista
+{
+	sListas lista;
+	int clave; // usamos el num_lista como clave
+	nodoVotos *infoVoto;
+	nodoListasVotadas *siguiente;
+};
 
 
 //PROTOTIPOS
