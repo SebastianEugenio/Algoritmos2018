@@ -830,7 +830,7 @@ void procesarVotos(nodoListasVotadas * & raizListas)
 
 void asignarBancas(nodoListasVotadas * & raizListas) {
 	
-	nodoListasVotadas * & aux = raizListas;
+	nodoListasVotadas * aux = raizListas;
 	
 	while(aux != NULL){
 		if (aux->lista.porcentajeVotosValidos >= 3) // solo entran a banca los que superen el 3% de votos
