@@ -287,41 +287,6 @@ void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave)
 	}
 	
 }
-
-void mostrarLista(nodoListasVotadas *lista)
-{
-	nodoListasVotadas *actual = new nodoListasVotadas();
-	actual = lista;
-	while (actual != NULL)
-	{
-		cout << actual->lista.nombreLista << " -> ";
-		actual = actual->siguiente;
-	}
-}
-void insertarLista(nodoListasVotadas *&lista, sListas sLista)
-{
-	nodoListasVotadas *nuevoNodo = new nodoListasVotadas();
-	nuevoNodo->lista = sLista;
-
-	nodoListasVotadas *aux1 = lista;
-	nodoListasVotadas *aux2;
-
-	while (aux1 != NULL)
-	{
-		aux2 = aux1;
-		aux1 = aux1->siguiente;
-	}
-	if (lista == aux1)
-	{
-		lista = nuevoNodo;
-	}
-	else
-	{
-		aux2->siguiente = nuevoNodo;
-	}
-
-	nuevoNodo->siguiente = aux1;
-}
 //////////
 
 void inicializarGanador(sGanadores & ganador) {
