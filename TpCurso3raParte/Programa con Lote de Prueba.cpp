@@ -228,7 +228,7 @@ int main()
 
 //METODOS LISTAS ENLAZADAS
 
-bool buscarLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
+bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
 {
 	nodoListasVotadas *actual = raiz;
 	
@@ -826,7 +826,7 @@ void procesarVotos(nodoListasVotadas * & raizListas)
 	while(!feof(a)){
 		
 		// Busco el nodoLista correspondiente
-		if ( buscarLista(raizListas,aux,voto.numeroLista) )
+		if ( buscarEnLista(raizListas,aux,voto.numeroLista) )
 		{
 			// procesar votos totales por lista.
 			aux->lista.cantVotosTotales++;
@@ -1022,7 +1022,7 @@ void ordenarListas(nodoListasVotadas * & raizListas)
 		insertarOrdInvertidoListaVotadas(auxFinal,aux2->lista,aux2->lista.cantVotosValidos);
 		
 		// Busco el nodo dentro de la lista final, para luego agregarle la informacion de los votos
-		buscarLista(auxFinal,aux3,aux2->lista.cantVotosValidos);
+		buscarEnLista(auxFinal,aux3,aux2->lista.cantVotosValidos);
 		aux3->infoVoto = aux2->infoVoto;
 		
 	}
@@ -1058,7 +1058,7 @@ void guardarParticipantes(nodoListasVotadas * raizListas)
 	for (int i = 0; i < cantParticipantes; i++) {
 
 		if (numBancas == cantBancas) numBancas = 0;
-		buscarLista(raizListas,listaAux,numLista+1);
+		buscarEnLista(raizListas,listaAux,numLista+1);
 
 		ganadores[i].numLista = numLista+1;
 		ganadores[i].numBanca = j;
