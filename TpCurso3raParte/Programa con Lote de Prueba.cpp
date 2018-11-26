@@ -101,7 +101,7 @@ void cargarVotos();
 void leerListas();
 void procesarVotos(nodoListasVotadas * & raizListas);
 void asignarBancas(nodoListasVotadas * & raizListas);
-void ordenarListas(sListas lista[cantListas]);
+void ordenarListas(nodoListasVotadas * & raizListas);
 void mostrarTabla();
 void guardarParticipantes();
 void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
@@ -112,6 +112,7 @@ void mostrarLoteDePrueba(nodoListasVotadas * & raizListas);
 bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
 void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
 void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave);
+bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo);
 
 // func for debug 
 void mostrarLista(sListas lista){ 
@@ -192,7 +193,7 @@ int main()
 
 	asignarBancas(listadoListas);
 
-	ordenarListas(listas);
+	ordenarListas(listadoListas);
 
 	guardarParticipantes();
 
@@ -285,6 +286,22 @@ void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave)
 		}
 	}
 	
+}
+
+bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo)
+{
+	nodoListasVotadas * aux;
+	if(raiz == NULL) 
+	{
+		return false;	
+	} else {
+		nodo = raiz;
+		aux = raiz;
+		raiz = raiz->siguiente;
+		delete aux;
+		
+		return true;
+	}
 }
 //////////
 
@@ -935,29 +952,28 @@ void mostrarTabla()
 }
 
 
-//  metodo burbuja para ordenar de mayor a menor
-void ordenarListas(sListas lista[cantListas]) 
+//  se usa lista enlazada auxiliar para ordenar las listas segun la cantidad de votos validos.
+void ordenarListas(nodoListasVotadas * & raizListas) 
 {
-	sListas temporal;
-	inicializarLista(temporal);
-
-	sBancas temporalBancas;
-	inicializarBanca(temporalBancas);
-
-	for (int i = 0; i < cantListas; i++) {
-		for (int j = 0; j < cantListas - 1; j++) {
-			if (lista[j].cantVotosValidos < lista[j + 1].cantVotosValidos) {
-				temporal = lista[j];
-				lista[j] = lista[j + 1];
-				lista[j + 1] = temporal;
-
-				//tambien se ordenan las bancas para que coincida con cada lista
-				temporalBancas = bancas[j]; 
-				bancas[j] = bancas[j + 1];
-				bancas[j + 1] = temporalBancas;
-			}
-		}
+	nodoListasVotadas * aux = raizListas;
+	nodoListasVotadas * aux2 = NULL;
+	nodoListasVotadas * aux3 = NULL;
+	nodoListasVotadas * auxFinal = NULL;
+	
+	while(aux != NULL)
+	{
+		// Saco el primero elemento de la lista
+		sacarPrimero(aux,aux2);
+		// Lo inserto ordenado en la lista auxiliar final
+		insertarOrdenadoListaVotadas(auxFinal,aux2->lista,aux2->lista.cantVotosValidos);
+		
+		// Busco el nodo dentro de la lista final, para luego agregarle la informacion de los votos
+		buscarLista(auxFinal,aux3,aux2->lista.cantVotosValidos);
+		aux3->infoVoto = aux2->infoVoto;
+		
+		aux = aux->siguiente;
 	}
+	raizListas = auxFinal;
 }
 
 // metodo burbuja para ordenar de mayor a menor
