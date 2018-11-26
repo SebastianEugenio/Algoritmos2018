@@ -110,6 +110,8 @@ void setearColor(int rgb);
 void mostrarLoteDePrueba();
 // PROTOTIPOS LISTAS ENLAZADAS
 bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
+void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
+void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave);
 
 // func for debug 
 void mostrarLista(sListas lista){ 
@@ -223,6 +225,67 @@ bool buscarLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
 		aux = actual;
 		return true;
 	}
+}
+
+void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave)
+{
+	nodoListasVotadas * aux = new nodoListasVotadas();
+	
+	aux->clave = clave;
+	aux->lista = lista;
+	aux->infoVoto = NULL;
+	
+	// Si la lista esta vacia
+	if(raiz == NULL) {
+		aux->siguiente = NULL;
+		raiz = aux;
+	} else {
+		// Si debe ir primero
+		if (raiz->clave > clave){
+			aux->siguiente = raiz;
+			raiz = aux;
+		} else {
+			// Si debe ir despues del primero
+			nodoListasVotadas * aux2 = raiz;
+			while(aux2->siguiente != NULL && aux2->siguiente->clave >= clave) {
+				aux2 = aux2->siguiente;
+			}
+			
+			aux->siguiente = aux2->siguiente;
+			aux2->siguiente = aux;
+		}
+	}
+	
+}
+
+void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave)
+{
+	nodoVotos * aux = new nodoVotos();
+	
+	aux->clave = clave;
+	aux->voto = voto;
+	
+	// Si la lista esta vacia
+	if(raiz == NULL) {
+		aux->siguiente = NULL;
+		raiz = aux;
+	} else {
+		// Si debe ir primero
+		if (raiz->clave > clave){
+			aux->siguiente = raiz;
+			raiz = aux;
+		} else {
+			// Si debe ir despues del primero
+			nodoListasVotadas * aux2 = raiz;
+			while(aux2->siguiente != NULL && aux2->siguiente->clave >= clave) {
+				aux2 = aux2->siguiente;
+			}
+			
+			aux->siguiente = aux2->siguiente;
+			aux2->siguiente = aux;
+		}
+	}
+	
 }
 
 void mostrarLista(nodoListasVotadas *lista)
