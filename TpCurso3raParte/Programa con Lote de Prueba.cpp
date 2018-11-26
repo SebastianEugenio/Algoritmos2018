@@ -24,18 +24,6 @@ const int cantTotalParticipantes = 65;
 const char* ARCHIVO_LISTAS = "listas.bin";
 const char* ARCHIVO_VOTOS = "votos.bin";
 
-//LISTAS ENLAZADAS
-struct nodoListasVotadas //lista con sublista
-{
-	sListas lista;
-	nodoVotos *infoVoto;
-	nodoListasVotadas *siguiente;
-};
-struct nodoVotos //sublista
-{
-	sVotos voto;
-	nodoVotos *siguiente;
-};
 // STRUCTS
 struct sVotos {
 	int numeroLista;
@@ -83,6 +71,21 @@ struct sGanadores
 	char candidato[cantCaracteres];
 }ganadores[cantTotalParticipantes];
 
+//LISTAS ENLAZADAS
+struct nodoVotos //sublista
+{
+	sVotos voto;
+	int clave; // usamos la edad como clave
+	nodoVotos *siguiente;
+};
+struct nodoListasVotadas //lista con sublista
+{
+	sListas lista;
+	int clave; // usamos el num_lista como clave
+	nodoVotos *infoVoto;
+	nodoListasVotadas *siguiente;
+};
+
 
 //PROTOTIPOS
 void inicializarGanador(sGanadores & ganador);
@@ -96,15 +99,21 @@ void cargarListas();
 void cargarCandidatos(sListas & auxLista);
 void cargarVotos();
 void leerListas();
-void procesarVotos();
-void asignarBancas(sListas lista);
-void ordenarListas(sListas lista[cantListas]);
-void mostrarTabla();
-void guardarParticipantes();
+void procesarVotos(nodoListasVotadas * & raizListas);
+void asignarBancas(nodoListasVotadas * & raizListas);
+void ordenarListas(nodoListasVotadas * & raizListas);
+void mostrarTabla(nodoListasVotadas * raizListas);
+void guardarParticipantes(nodoListasVotadas * raizListas);
 void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
-void mostrarListasPorEdad();
+void mostrarListasPorEdad(nodoListasVotadas * raizListas);
 void setearColor(int rgb);
-void mostrarLoteDePrueba();
+void mostrarLoteDePrueba(nodoListasVotadas * & raizListas);
+// PROTOTIPOS LISTAS ENLAZADAS
+bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
+void insertarOrdInvertidoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
+void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
+void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave);
+bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo);
 
 // func for debug 
 void mostrarLista(sListas lista){ 
@@ -121,13 +130,13 @@ void mostrarLista(sListas lista){
 	printf("votos mas de 50: %d\n",lista.mas50); 
 	
 	
-	printf("Candidatos:\n"); 
-	 
-  
-	for (int f = 0; f < cantCandidatos; f++)  
-	{  
-		printf("--> %s\n",lista.candidatos[f]); 
-	}   
+//	printf("Candidatos:\n"); 
+//	 
+//  
+//	for (int f = 0; f < cantCandidatos; f++)  
+//	{  
+//		printf("--> %s\n",lista.candidatos[f]); 
+//	}   
 } 
 void mostrarVoto(sVotos voto){
 	printf("Voto lista: %d\n",voto.numeroLista);
@@ -166,10 +175,29 @@ void mostrarArchivos(){
 	}
 	fclose(b);
 } 
+void mostrarListadoListas(nodoListasVotadas * raiz){
+	nodoListasVotadas * aux = raiz;
+	nodoVotos * votoAux;
+	
+	while(aux != NULL){
+		mostrarLista(aux->lista);
+		
+		votoAux = aux->infoVoto;
+		while(votoAux != NULL){
+			mostrarVoto(votoAux->voto);
+			votoAux=votoAux->siguiente;
+		}
+		
+		aux=aux->siguiente;
+	}
+}
+
 
 int main()
 {	
 	setlocale(LC_ALL, ""); //habilita caracteres latinos
+	
+	nodoListasVotadas * listadoListas = NULL;
 
 	inicializarListas();
 
@@ -177,24 +205,21 @@ int main()
 
 	cargarVotos();
 
-	procesarVotos();
+	procesarVotos(listadoListas);
 	
-	mostrarLoteDePrueba();
+	mostrarLoteDePrueba(listadoListas);
 
-	for (int i = 0; i < cantListas; i++)
-	{
-		asignarBancas(listas[i]);
-	}
+	asignarBancas(listadoListas);
 
-	ordenarListas(listas);
+	guardarParticipantes(listadoListas);
 
-	guardarParticipantes();
+	ordenarListas(listadoListas);
 
 	ordenarParticipantes(ganadores);
 
-	mostrarTabla();
+	mostrarTabla(listadoListas);
 
-	mostrarListasPorEdad();
+	mostrarListasPorEdad(listadoListas);
 
 	system("pause");
 
@@ -203,55 +228,130 @@ int main()
 
 //METODOS LISTAS ENLAZADAS
 
-void buscarLista(nodoListasVotadas *lista, int numLista)
+bool buscarLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
 {
-	bool existe = false;
-	nodoListasVotadas *actual = new nodoListasVotadas();
-	actual = lista;
+	nodoListasVotadas *actual = raiz;
+	
 
-	while (actual != NULL)
+	while (actual != NULL && actual->clave != clave)
 	{
-		if (actual->lista.numeroLista == numLista)
-		{
-			existe = true;
+		actual = actual->siguiente;
+	}
+	
+	if(actual == NULL){
+		return false;
+	} else {
+		aux = actual;
+		return true;
+	}
+}
+
+void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave)
+{
+	nodoListasVotadas * aux = new nodoListasVotadas();
+	
+	aux->clave = clave;
+	aux->lista = lista;
+	aux->infoVoto = NULL;
+	
+	// Si la lista esta vacia
+	if(raiz == NULL) {
+		aux->siguiente = NULL;
+		raiz = aux;
+	} else {
+		// Si debe ir primero
+		if (raiz->clave > clave){
+			aux->siguiente = raiz;
+			raiz = aux;
+		} else {
+			// Si debe ir despues del primero
+			nodoListasVotadas * aux2 = raiz;
+			while(aux2->siguiente != NULL && aux2->siguiente->clave <= clave) {
+				aux2 = aux2->siguiente;
+			}
+			
+			aux->siguiente = aux2->siguiente;
+			aux2->siguiente = aux;
 		}
-		actual = actual->siguiente;
 	}
-	existe == true ? cout << "Elemento " << numLista << "existe\numLista" : cout << "Elemento " << numLista << "no existe\n";
+	
 }
-void mostrarLista(nodoListasVotadas *lista)
+
+void insertarOrdInvertidoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave)
 {
-	nodoListasVotadas *actual = new nodoListasVotadas();
-	actual = lista;
-	while (actual != NULL)
-	{
-		cout << actual->lista.nombreLista << " -> ";
-		actual = actual->siguiente;
+	nodoListasVotadas * aux = new nodoListasVotadas();
+	
+	aux->clave = clave;
+	aux->lista = lista;
+	aux->infoVoto = NULL;
+	
+	// Si la lista esta vacia
+	if(raiz == NULL) {
+		aux->siguiente = NULL;
+		raiz = aux;
+	} else {
+		// Si debe ir primero
+		if (raiz->clave < clave){
+			aux->siguiente = raiz;
+			raiz = aux;
+		} else {
+			// Si debe ir despues del primero
+			nodoListasVotadas * aux2 = raiz;
+			while(aux2->siguiente != NULL && aux2->siguiente->clave >= clave) {
+				aux2 = aux2->siguiente;
+			}
+			
+			aux->siguiente = aux2->siguiente;
+			aux2->siguiente = aux;
+		}
 	}
+	
 }
-void insertarLista(nodoListasVotadas *&lista, sListas sLista)
+
+void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave)
 {
-	nodoListasVotadas *nuevoNodo = new nodoListasVotadas();
-	nuevoNodo->lista = sLista;
-
-	nodoListasVotadas *aux1 = lista;
-	nodoListasVotadas *aux2;
-
-	while (aux1 != NULL)
-	{
-		aux2 = aux1;
-		aux1 = aux1->siguiente;
+	nodoVotos * aux = new nodoVotos();
+	
+	aux->clave = clave;
+	aux->voto = voto;
+	
+	// Si la lista esta vacia
+	if(raiz == NULL) {
+		aux->siguiente = NULL;
+		raiz = aux;
+	} else {
+		// Si debe ir primero
+		if (raiz->clave > clave){
+			aux->siguiente = raiz;
+			raiz = aux;
+		} else {
+			// Si debe ir despues del primero
+			nodoVotos * aux2 = raiz;
+			while(aux2->siguiente != NULL && aux2->siguiente->clave <= clave) {
+				aux2 = aux2->siguiente;
+			}
+			
+			aux->siguiente = aux2->siguiente;
+			aux2->siguiente = aux;
+		}
 	}
-	if (lista == aux1)
-	{
-		lista = nuevoNodo;
-	}
-	else
-	{
-		aux2->siguiente = nuevoNodo;
-	}
+	
+}
 
-	nuevoNodo->siguiente = aux1;
+bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo)
+{
+	nodoListasVotadas * aux = NULL;
+	if(raiz == NULL) 
+	{
+		return false;	
+	} else {
+		nodo = raiz;
+		aux = raiz;
+		raiz = raiz->siguiente;
+		delete (aux);
+		
+		return true;
+	}
 }
 //////////
 
@@ -688,8 +788,8 @@ void cargarVotos()
 	fclose(a);	
 }
 
-// Guarda en un arreglo las listas desde un archivo
-void leerListas()
+// Guarda en una lista enlazada las listas desde un archivo
+void leerListas(nodoListasVotadas * & raizListas)
 {
 	sListas lista;
 	
@@ -700,8 +800,8 @@ void leerListas()
 	
 	while(!feof(a)){
 		
-		// Guardo en arreglo global la informacion del archivo
-		listas[lista.numeroLista-1] = lista;		
+		// Inserto en la lista ordenada por numero de lista
+		insertarOrdenadoListaVotadas(raizListas,lista,lista.numeroLista);
 		
 		fread(&lista,sizeof(sListas),1,a);
 	}
@@ -710,11 +810,13 @@ void leerListas()
 }
 
 // calcula los votos validos de cada lista, del total de listas y porcentaje
-void procesarVotos()
+void procesarVotos(nodoListasVotadas * & raizListas)
 {
-	leerListas();
+	leerListas(raizListas);
 	
 	sVotos voto;
+	nodoListasVotadas * aux ;
+	nodoListasVotadas * auxPorcentaje = raizListas; // Puntero auxiliar para recorrer y guardar porcentaje de votos votados
 	
 	// leer archivo votos
 	FILE *a = fopen(ARCHIVO_VOTOS,"rb");
@@ -723,35 +825,45 @@ void procesarVotos()
 	
 	while(!feof(a)){
 		
-		// procesar votos totales por lista.
-		listas[voto.numeroLista-1].cantVotosTotales++;
-		
-		// Proceso de votos validos
-		if (voto.tipoVoto >= 1 && voto.tipoVoto <= 7) {
-			listas[voto.numeroLista-1].cantVotosValidos++;
+		// Busco el nodoLista correspondiente
+		if ( buscarLista(raizListas,aux,voto.numeroLista) )
+		{
+			// procesar votos totales por lista.
+			aux->lista.cantVotosTotales++;
 			
-			// guardar en variable global cantTotalVotosValidos
-			cantTotalVotosValidos++;
+			// Proceso de votos validos
+			if (voto.tipoVoto >= 1 && voto.tipoVoto <= 7) {
+				aux->lista.cantVotosValidos++;
+				
+				// Guardo el voto en la lista de votos para esa lista.
+				insertarOrdenadoVotos(aux->infoVoto,voto,voto.edad);
+				
+				// guardar en variable global cantTotalVotosValidos
+				cantTotalVotosValidos++;
+				
+				// guardo edades
+				if(voto.edad < 18) aux->lista.hasta18++;
+				if(voto.edad >= 18 && voto.edad < 30) aux->lista.hasta30++;
+				if(voto.edad >= 30 && voto.edad < 50) aux->lista.hasta50++;
+				if(voto.edad >= 50) aux->lista.mas50++;
+				
+			} else {
 			
-			// guardo edades
-			if(voto.edad < 18) listas[voto.numeroLista-1].hasta18++;
-			if(voto.edad >= 18 && voto.edad < 30) listas[voto.numeroLista-1].hasta30++;
-			if(voto.edad >= 30 && voto.edad < 50) listas[voto.numeroLista-1].hasta50++;
-			if(voto.edad >= 50) listas[voto.numeroLista-1].mas50++;
-			
-		} else {
-		
-			// Proceso votos en blanco
-			if (voto.tipoVoto == 0) {
-				cantTotalVotosEnBlanco++;
-			}
-			
-			// Proceso votos nulos
-			if (voto.tipoVoto < 0 || voto.tipoVoto > 7) {
-				cantTotalVotosNulos++;
+				// Proceso votos en blanco
+				if (voto.tipoVoto == 0) {
+					cantTotalVotosEnBlanco++;
+				}
+				
+				// Proceso votos nulos
+				if (voto.tipoVoto < 0 || voto.tipoVoto > 7) {
+					cantTotalVotosNulos++;
+				}
+				
 			}
 			
 		}
+		
+		
 		
 		fread(&voto,sizeof(sVotos),1,a);
 	}
@@ -759,36 +871,47 @@ void procesarVotos()
 	fclose(a);
 	
 	// Proceso porcentaje de votos por lista.
-	for (int i = 0; i < cantListas; i++)
+	while (auxPorcentaje != NULL)
 	{
-		listas[i].porcentajeVotosValidos = (100 * listas[i].cantVotosValidos) / cantTotalVotosValidos;
+		auxPorcentaje->lista.porcentajeVotosValidos = (100 * auxPorcentaje->lista.cantVotosValidos) / cantTotalVotosValidos;
+		auxPorcentaje = auxPorcentaje->siguiente;
 	}
 }
 
-void asignarBancas(sListas lista) {
-
-	if (lista.porcentajeVotosValidos >= 3) // solo entran a banca los que superen el 3% de votos
-	{
-		bancas[lista.numeroLista - 1].cantBanca1 = lista.cantVotosValidos; // la primera banca tiene la mismca cantidad de votos
-
-		bancas[lista.numeroLista - 1].cantBanca2 = lista.cantVotosValidos / 2;
-		bancas[lista.numeroLista - 1].cantBanca3 = lista.cantVotosValidos / 3;
-		bancas[lista.numeroLista - 1].cantBanca4 = lista.cantVotosValidos / 4;
-		bancas[lista.numeroLista - 1].cantBanca5 = lista.cantVotosValidos / 5;
-		bancas[lista.numeroLista - 1].cantBanca6 = lista.cantVotosValidos / 6;
-		bancas[lista.numeroLista - 1].cantBanca7 = lista.cantVotosValidos / 7;
-		bancas[lista.numeroLista - 1].cantBanca8 = lista.cantVotosValidos / 8;
-		bancas[lista.numeroLista - 1].cantBanca9 = lista.cantVotosValidos / 9;
-		bancas[lista.numeroLista - 1].cantBanca10 = lista.cantVotosValidos / 10;
-		bancas[lista.numeroLista - 1].cantBanca11 = lista.cantVotosValidos / 11;
-		bancas[lista.numeroLista - 1].cantBanca12 = lista.cantVotosValidos / 12;
-		bancas[lista.numeroLista - 1].cantBanca13 = lista.cantVotosValidos / 13;
+void asignarBancas(nodoListasVotadas * & raizListas) {
+	
+	nodoListasVotadas * aux = raizListas;
+	
+	while(aux != NULL){
+		if (aux->lista.porcentajeVotosValidos >= 3) // solo entran a banca los que superen el 3% de votos
+		{
+			bancas[aux->lista.numeroLista - 1].cantBanca1 = aux->lista.cantVotosValidos; // la primera banca tiene la mismca cantidad de votos
+	
+			bancas[aux->lista.numeroLista - 1].cantBanca2 = aux->lista.cantVotosValidos / 2;
+			bancas[aux->lista.numeroLista - 1].cantBanca3 = aux->lista.cantVotosValidos / 3;
+			bancas[aux->lista.numeroLista - 1].cantBanca4 = aux->lista.cantVotosValidos / 4;
+			bancas[aux->lista.numeroLista - 1].cantBanca5 = aux->lista.cantVotosValidos / 5;
+			bancas[aux->lista.numeroLista - 1].cantBanca6 = aux->lista.cantVotosValidos / 6;
+			bancas[aux->lista.numeroLista - 1].cantBanca7 = aux->lista.cantVotosValidos / 7;
+			bancas[aux->lista.numeroLista - 1].cantBanca8 = aux->lista.cantVotosValidos / 8;
+			bancas[aux->lista.numeroLista - 1].cantBanca9 = aux->lista.cantVotosValidos / 9;
+			bancas[aux->lista.numeroLista - 1].cantBanca10 = aux->lista.cantVotosValidos / 10;
+			bancas[aux->lista.numeroLista - 1].cantBanca11 = aux->lista.cantVotosValidos / 11;
+			bancas[aux->lista.numeroLista - 1].cantBanca12 = aux->lista.cantVotosValidos / 12;
+			bancas[aux->lista.numeroLista - 1].cantBanca13 = aux->lista.cantVotosValidos / 13;
+		}
+		
+		aux=aux->siguiente;
 	}
+
+	
 }
 
 
-void mostrarTabla()
+void mostrarTabla(nodoListasVotadas * raizListas)
 {
+	nodoListasVotadas * aux = raizListas;
+	
 	setearColor(6);
 	cout << "\n\n+----------------------------------------------------------------------------------------------------------------------------+\n";
 	cout << "|                                                    RESULTADOS OBTENIDOS                                                    |\n";
@@ -832,40 +955,41 @@ void mostrarTabla()
 		"");
 	cout << "+----------+------+-------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+--------------------+\n";
 
-	for (int i = 0;i < cantListas; i++)
+	while (aux!=NULL)
 	{
 		printf("|%d %-8s|%-6d|%-7d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-5d|%-20s|\n",
-			listas[i].numeroLista,
-			listas[i].nombreLista,
-			listas[i].cantVotosValidos,
-			listas[i].porcentajeVotosValidos,
-			bancas[i].cantBanca1,
-			bancas[i].cantBanca2,
-			bancas[i].cantBanca3,
-			bancas[i].cantBanca4,
-			bancas[i].cantBanca5,
-			bancas[i].cantBanca6,
-			bancas[i].cantBanca7,
-			bancas[i].cantBanca8,
-			bancas[i].cantBanca9,
-			bancas[i].cantBanca10,
-			bancas[i].cantBanca11,
-			bancas[i].cantBanca12,
-			bancas[i].cantBanca13,
+			aux->lista.numeroLista,
+			aux->lista.nombreLista,
+			aux->lista.cantVotosValidos,
+			aux->lista.porcentajeVotosValidos,
+			bancas[aux->lista.numeroLista].cantBanca1,
+			bancas[aux->lista.numeroLista].cantBanca2,
+			bancas[aux->lista.numeroLista].cantBanca3,
+			bancas[aux->lista.numeroLista].cantBanca4,
+			bancas[aux->lista.numeroLista].cantBanca5,
+			bancas[aux->lista.numeroLista].cantBanca6,
+			bancas[aux->lista.numeroLista].cantBanca7,
+			bancas[aux->lista.numeroLista].cantBanca8,
+			bancas[aux->lista.numeroLista].cantBanca9,
+			bancas[aux->lista.numeroLista].cantBanca10,
+			bancas[aux->lista.numeroLista].cantBanca11,
+			bancas[aux->lista.numeroLista].cantBanca12,
+			bancas[aux->lista.numeroLista].cantBanca13,
 			"");
 
 		for (int j = 0; j < 13; j++)
 		{
-			if (listas[i].numeroLista == ganadores[j].numLista)
+			if (aux->lista.numeroLista == ganadores[j].numLista)
 			{
 				printf("|%-10s|%-6s|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 					"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ganadores[j].candidato);
 			}
-			if (listas[i].porcentajeVotosValidos < 3 && j == 0)
+			if (aux->lista.porcentajeVotosValidos < 3 && j == 0)
 				printf("|%-10s|%-6s|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 					"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "OBTUVO MENOS DEL 3%");
 		}
 		cout << "+----------+------+-------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+--------------------+\n";
+		aux=aux->siguiente;
 	}
 	printf("|%-10s|%-6d|%-7s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-5s|%-20s|\n",
 		"VOTOS EN", cantTotalVotosEnBlanco, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
@@ -881,29 +1005,28 @@ void mostrarTabla()
 }
 
 
-//  metodo burbuja para ordenar de mayor a menor
-void ordenarListas(sListas lista[cantListas]) 
+//  se usa lista enlazada auxiliar para ordenar las listas segun la cantidad de votos validos.
+void ordenarListas(nodoListasVotadas * & raizListas) 
 {
-	sListas temporal;
-	inicializarLista(temporal);
-
-	sBancas temporalBancas;
-	inicializarBanca(temporalBancas);
-
-	for (int i = 0; i < cantListas; i++) {
-		for (int j = 0; j < cantListas - 1; j++) {
-			if (lista[j].cantVotosValidos < lista[j + 1].cantVotosValidos) {
-				temporal = lista[j];
-				lista[j] = lista[j + 1];
-				lista[j + 1] = temporal;
-
-				//tambien se ordenan las bancas para que coincida con cada lista
-				temporalBancas = bancas[j]; 
-				bancas[j] = bancas[j + 1];
-				bancas[j + 1] = temporalBancas;
-			}
-		}
+	nodoListasVotadas * aux = raizListas;
+	nodoListasVotadas * aux2 = NULL;
+	nodoListasVotadas * aux3 = NULL;
+	nodoListasVotadas * auxFinal = NULL;
+	
+	while(aux != NULL)
+	{
+		// Saco el primer elemento de la lista
+		sacarPrimero(aux,aux2);
+		
+		// Lo inserto ordenado en la lista auxiliar final
+		insertarOrdInvertidoListaVotadas(auxFinal,aux2->lista,aux2->lista.cantVotosValidos);
+		
+		// Busco el nodo dentro de la lista final, para luego agregarle la informacion de los votos
+		buscarLista(auxFinal,aux3,aux2->lista.cantVotosValidos);
+		aux3->infoVoto = aux2->infoVoto;
+		
 	}
+	raizListas = auxFinal;
 }
 
 // metodo burbuja para ordenar de mayor a menor
@@ -923,19 +1046,21 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes])
 	}
 }
 
-void guardarParticipantes()
+void guardarParticipantes(nodoListasVotadas * raizListas)
 {
 	inicializarGanadores();
 	int numBancas = 0;
 	int numLista = 0;
 	int j = 1;
 	int cantParticipantes = cantListas * cantBancas;
+	nodoListasVotadas * listaAux = NULL;
 
 	for (int i = 0; i < cantParticipantes; i++) {
 
 		if (numBancas == cantBancas) numBancas = 0;
+		buscarLista(raizListas,listaAux,numLista+1);
 
-		ganadores[i].numLista = listas[numLista].numeroLista;
+		ganadores[i].numLista = numLista+1;
 		ganadores[i].numBanca = j;
 		switch (numBancas) {
 		case 0:ganadores[i].cantVotos = bancas[numLista].cantBanca1;break;
@@ -953,33 +1078,35 @@ void guardarParticipantes()
 		case 12:ganadores[i].cantVotos = bancas[numLista].cantBanca13;break;
 
 		};
-		strcpy(ganadores[i].candidato, listas[numLista].candidatos[numBancas]);
+		strcpy(ganadores[i].candidato, listaAux->lista.candidatos[numBancas]);
 		numBancas++;
 		j++;
 		if (j == 14) j = 1;
 		if (numBancas == 13) numLista++;
 	}
-
 }
 
-void mostrarListasPorEdad()
+void mostrarListasPorEdad(nodoListasVotadas * raizListas)
 {
+	nodoListasVotadas * aux = raizListas;
+	
 	setearColor(6);
 	cout << "\n\n+----------------------------------------------------------------------------------------------------------------------------+\n";
 	cout << "|                                           CANTIDAD DE VOTOS POR RANGO DE EDADES                                            |\n";
 
-	for (int i = 0; i < cantListas; i++)
+	while(aux!=NULL)
 	{
 		setearColor(6);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", listas[i].numeroLista, listas[i].nombreLista);
+		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", aux->lista.numeroLista, aux->lista.nombreLista);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		setearColor(7);
-		printf("| %61s | %58d |\n", "Cantidad votos de menores de 18 anos", listas[i].hasta18);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 18 y menores o iguales a 30 anos", listas[i].hasta30);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 30 y menores o iguales a 50 anos", listas[i].hasta50);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 50 anos", listas[i].mas50);
+		printf("| %61s | %58d |\n", "Cantidad votos de menores de 18 anos", aux->lista.hasta18);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 18 y menores o iguales a 30 anos", aux->lista.hasta30);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 30 y menores o iguales a 50 anos", aux->lista.hasta50);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 50 anos", aux->lista.mas50);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+		aux=aux->siguiente;
 	}
 
 
@@ -992,26 +1119,32 @@ void setearColor(int rgb)
 }
 
 
-void mostrarLoteDePrueba()
+void mostrarLoteDePrueba(nodoListasVotadas * & raizListas)
 {
+	nodoListasVotadas * aux = raizListas;
+	nodoListasVotadas * aux2 = raizListas;
+	nodoVotos * auxVotos = NULL;
+	
 	setearColor(6);
 	cout << "\n\n+----------------------------------------------------------------------------------------------------------------------------+\n";
 	cout << "|                                                         LOTE DE PRUEBA                                                     |\n";
 
 	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-	cout << "|                SE INGRESÓ EL NOMBRE, EL NUMERO DE LISTA Y EL NOMBRE DE LOS 25 CANDIDATOS EN EL SIGUIENTE ORDEN:            |\n";
-	for (int i = 0; i < cantListas; i++)
+	cout << "|                SE INGRESO EL NOMBRE, EL NUMERO DE LISTA Y EL NOMBRE DE LOS 25 CANDIDATOS EN EL SIGUIENTE ORDEN:            |\n";
+	while (aux != NULL)
 	{
 		setearColor(6);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", listas[i].numeroLista, listas[i].nombreLista);
+		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", aux->lista.numeroLista, aux->lista.nombreLista);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		setearColor(7);
 		for (int j = 0; j < cantCandidatos; j++)
 		{
-			printf("|%59s %-2d | %58s |\n", "Nombre del Candidato n°",j+1, listas[i].candidatos[j]);
+			printf("|%59s %-2d | %58s |\n", "Nombre del Candidato num",j+1, aux->lista.candidatos[j]);
 		}
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+		
+		aux = aux->siguiente;
 	}
 	
 	
@@ -1019,22 +1152,27 @@ void mostrarLoteDePrueba()
 	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 	cout << "|                                             INFORMACIÓN DE VOTOS INGRESADOS:                                               |\n";
 	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-	for (int i = 0; i < cantListas; i++)
+	while (aux2 != NULL)
 	{
 		setearColor(6);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-		printf("| Numero de Lista |   %-43d|    Nombre de Lista |  %-36s|\n", listas[i].numeroLista, listas[i].nombreLista);
+		printf("| Numero de Lista |   %-43d|    Nombre de Lista |  %-36s|\n", aux2->lista.numeroLista, aux2->lista.nombreLista);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-		printf("| Cantidad de Votos Ingresados |   %-30d| Cantidad de Votos Válidos |  %-29d|\n", listas[i].cantVotosTotales, listas[i].cantVotosValidos);
+		printf("| Cantidad de Votos Ingresados |   %-30d| Cantidad de Votos Validos |  %-29d|\n", aux2->lista.cantVotosTotales, aux2->lista.cantVotosValidos);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		setearColor(7);
-		for (int j = 0; j < listas[i].cantVotosTotales; j++)
+		auxVotos = aux2->infoVoto;
+		int i = 1;
+		while(auxVotos != NULL)
 		{
-			printf("|%28s %-3d : %28d |%28s :%28d |\n", "Voto n°", j + 1, votos[j].tipoVoto,"Edad del Votante", votos[j].edad);
+			printf("|%28s %-3d : %28d |%28s :%28d |\n", "Voto num", i, auxVotos->voto.tipoVoto,"Edad del Votante", auxVotos->voto.edad);
+			auxVotos = auxVotos->siguiente;
+			i++;
 		}
 		
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+		aux2 = aux2->siguiente;
 	}
 	
 }
