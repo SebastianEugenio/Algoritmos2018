@@ -102,10 +102,10 @@ void leerListas();
 void procesarVotos(nodoListasVotadas * & raizListas);
 void asignarBancas(nodoListasVotadas * & raizListas);
 void ordenarListas(nodoListasVotadas * & raizListas);
-void mostrarTabla(nodoListasVotadas * & raizListas);
+void mostrarTabla(nodoListasVotadas * raizListas);
 void guardarParticipantes(nodoListasVotadas * raizListas);
 void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
-void mostrarListasPorEdad();
+void mostrarListasPorEdad(nodoListasVotadas * raizListas);
 void setearColor(int rgb);
 void mostrarLoteDePrueba(nodoListasVotadas * & raizListas);
 // PROTOTIPOS LISTAS ENLAZADAS
@@ -207,7 +207,7 @@ int main()
 
 	procesarVotos(listadoListas);
 	
-	//mostrarLoteDePrueba(listadoListas);
+	mostrarLoteDePrueba(listadoListas);
 
 	asignarBancas(listadoListas);
 
@@ -219,7 +219,7 @@ int main()
 
 	mostrarTabla(listadoListas);
 
-	//mostrarListasPorEdad();
+	mostrarListasPorEdad(listadoListas);
 
 	system("pause");
 
@@ -908,7 +908,7 @@ void asignarBancas(nodoListasVotadas * & raizListas) {
 }
 
 
-void mostrarTabla(nodoListasVotadas * & raizListas)
+void mostrarTabla(nodoListasVotadas * raizListas)
 {
 	nodoListasVotadas * aux = raizListas;
 	
@@ -1086,24 +1086,27 @@ void guardarParticipantes(nodoListasVotadas * raizListas)
 	}
 }
 
-void mostrarListasPorEdad()
+void mostrarListasPorEdad(nodoListasVotadas * raizListas)
 {
+	nodoListasVotadas * aux = raizListas;
+	
 	setearColor(6);
 	cout << "\n\n+----------------------------------------------------------------------------------------------------------------------------+\n";
 	cout << "|                                           CANTIDAD DE VOTOS POR RANGO DE EDADES                                            |\n";
 
-	for (int i = 0; i < cantListas; i++)
+	while(aux!=NULL)
 	{
 		setearColor(6);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
-		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", listas[i].numeroLista, listas[i].nombreLista);
+		printf("| Numero de Lista |   %-42d|    Nombre de Lista |  %-37s|\n", aux->lista.numeroLista, aux->lista.nombreLista);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		setearColor(7);
-		printf("| %61s | %58d |\n", "Cantidad votos de menores de 18 anos", listas[i].hasta18);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 18 y menores o iguales a 30 anos", listas[i].hasta30);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 30 y menores o iguales a 50 anos", listas[i].hasta50);
-		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 50 anos", listas[i].mas50);
+		printf("| %61s | %58d |\n", "Cantidad votos de menores de 18 anos", aux->lista.hasta18);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 18 y menores o iguales a 30 anos", aux->lista.hasta30);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 30 y menores o iguales a 50 anos", aux->lista.hasta50);
+		printf("| %61s | %58d |\n", "Cantidad votos de mayores a 50 anos", aux->lista.mas50);
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+		aux=aux->siguiente;
 	}
 
 
