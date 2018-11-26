@@ -103,13 +103,14 @@ void procesarVotos(nodoListasVotadas * & raizListas);
 void asignarBancas(nodoListasVotadas * & raizListas);
 void ordenarListas(nodoListasVotadas * & raizListas);
 void mostrarTabla();
-void guardarParticipantes();
+void guardarParticipantes(nodoListasVotadas * raizListas);
 void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
 void mostrarListasPorEdad();
 void setearColor(int rgb);
 void mostrarLoteDePrueba(nodoListasVotadas * & raizListas);
 // PROTOTIPOS LISTAS ENLAZADAS
 bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
+void insertarOrdInvertidoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
 void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
 void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave);
 bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo);
@@ -129,13 +130,13 @@ void mostrarLista(sListas lista){
 	printf("votos mas de 50: %d\n",lista.mas50); 
 	
 	
-	printf("Candidatos:\n"); 
-	 
-  
-	for (int f = 0; f < cantCandidatos; f++)  
-	{  
-		printf("--> %s\n",lista.candidatos[f]); 
-	}   
+//	printf("Candidatos:\n"); 
+//	 
+//  
+//	for (int f = 0; f < cantCandidatos; f++)  
+//	{  
+//		printf("--> %s\n",lista.candidatos[f]); 
+//	}   
 } 
 void mostrarVoto(sVotos voto){
 	printf("Voto lista: %d\n",voto.numeroLista);
@@ -174,6 +175,23 @@ void mostrarArchivos(){
 	}
 	fclose(b);
 } 
+void mostrarListadoListas(nodoListasVotadas * raiz){
+	nodoListasVotadas * aux = raiz;
+	nodoVotos * votoAux;
+	
+	while(aux != NULL){
+		mostrarLista(aux->lista);
+		
+		votoAux = aux->infoVoto;
+		while(votoAux != NULL){
+			mostrarVoto(votoAux->voto);
+			votoAux=votoAux->siguiente;
+		}
+		
+		aux=aux->siguiente;
+	}
+}
+
 
 int main()
 {	
@@ -189,19 +207,19 @@ int main()
 
 	procesarVotos(listadoListas);
 	
-	mostrarLoteDePrueba(listadoListas);
+	//mostrarLoteDePrueba(listadoListas);
 
 	asignarBancas(listadoListas);
 
+	guardarParticipantes(listadoListas);
+
 	ordenarListas(listadoListas);
 
-	guardarParticipantes();
+	//ordenarParticipantes(ganadores);
 
-	ordenarParticipantes(ganadores);
+	//mostrarTabla();
 
-	mostrarTabla();
-
-	mostrarListasPorEdad();
+	//mostrarListasPorEdad();
 
 	system("pause");
 
@@ -213,6 +231,7 @@ int main()
 bool buscarLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
 {
 	nodoListasVotadas *actual = raiz;
+	
 
 	while (actual != NULL && actual->clave != clave)
 	{
@@ -258,6 +277,37 @@ void insertarOrdenadoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int c
 	
 }
 
+void insertarOrdInvertidoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave)
+{
+	nodoListasVotadas * aux = new nodoListasVotadas();
+	
+	aux->clave = clave;
+	aux->lista = lista;
+	aux->infoVoto = NULL;
+	
+	// Si la lista esta vacia
+	if(raiz == NULL) {
+		aux->siguiente = NULL;
+		raiz = aux;
+	} else {
+		// Si debe ir primero
+		if (raiz->clave < clave){
+			aux->siguiente = raiz;
+			raiz = aux;
+		} else {
+			// Si debe ir despues del primero
+			nodoListasVotadas * aux2 = raiz;
+			while(aux2->siguiente != NULL && aux2->siguiente->clave >= clave) {
+				aux2 = aux2->siguiente;
+			}
+			
+			aux->siguiente = aux2->siguiente;
+			aux2->siguiente = aux;
+		}
+	}
+	
+}
+
 void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave)
 {
 	nodoVotos * aux = new nodoVotos();
@@ -290,7 +340,7 @@ void insertarOrdenadoVotos(nodoVotos * & raiz,sVotos voto,int clave)
 
 bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo)
 {
-	nodoListasVotadas * aux;
+	nodoListasVotadas * aux = NULL;
 	if(raiz == NULL) 
 	{
 		return false;	
@@ -298,7 +348,7 @@ bool sacarPrimero(nodoListasVotadas * & raiz,nodoListasVotadas * & nodo)
 		nodo = raiz;
 		aux = raiz;
 		raiz = raiz->siguiente;
-		delete aux;
+		delete (aux);
 		
 		return true;
 	}
@@ -962,16 +1012,16 @@ void ordenarListas(nodoListasVotadas * & raizListas)
 	
 	while(aux != NULL)
 	{
-		// Saco el primero elemento de la lista
+		// Saco el primer elemento de la lista
 		sacarPrimero(aux,aux2);
+		
 		// Lo inserto ordenado en la lista auxiliar final
-		insertarOrdenadoListaVotadas(auxFinal,aux2->lista,aux2->lista.cantVotosValidos);
+		insertarOrdInvertidoListaVotadas(auxFinal,aux2->lista,aux2->lista.cantVotosValidos);
 		
 		// Busco el nodo dentro de la lista final, para luego agregarle la informacion de los votos
 		buscarLista(auxFinal,aux3,aux2->lista.cantVotosValidos);
 		aux3->infoVoto = aux2->infoVoto;
 		
-		aux = aux->siguiente;
 	}
 	raizListas = auxFinal;
 }
@@ -993,19 +1043,22 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes])
 	}
 }
 
-void guardarParticipantes()
+void guardarParticipantes(nodoListasVotadas * raizListas)
 {
 	inicializarGanadores();
 	int numBancas = 0;
 	int numLista = 0;
 	int j = 1;
 	int cantParticipantes = cantListas * cantBancas;
+	nodoListasVotadas * listaAux = NULL;
 
 	for (int i = 0; i < cantParticipantes; i++) {
 
 		if (numBancas == cantBancas) numBancas = 0;
+		cout << "numlista " << numLista+1 << endl;
+		buscarLista(raizListas,listaAux,numLista+1);
 
-		ganadores[i].numLista = listas[numLista].numeroLista;
+		ganadores[i].numLista = numLista+1;
 		ganadores[i].numBanca = j;
 		switch (numBancas) {
 		case 0:ganadores[i].cantVotos = bancas[numLista].cantBanca1;break;
@@ -1023,12 +1076,24 @@ void guardarParticipantes()
 		case 12:ganadores[i].cantVotos = bancas[numLista].cantBanca13;break;
 
 		};
-		strcpy(ganadores[i].candidato, listas[numLista].candidatos[numBancas]);
+		strcpy(ganadores[i].candidato, listaAux->lista.candidatos[numBancas]);
 		numBancas++;
 		j++;
 		if (j == 14) j = 1;
 		if (numBancas == 13) numLista++;
 	}
+	
+	
+	for(int i=0; i<cantTotalParticipantes; i++) {
+		printf("Ganador #%d - NumBanca #%d - NumLista #%d - CantVotos %d - ",
+		i,
+		ganadores[i].numBanca,
+		ganadores[i].numLista,
+		ganadores[i].cantVotos);
+		
+		cout << "Candidato: " << ganadores[i].candidato << endl;
+	}
+	
 
 }
 
