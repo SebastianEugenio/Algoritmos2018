@@ -776,7 +776,7 @@ void procesarVotos(nodoListasVotadas * & raizListas)
 	while(!feof(a)){
 		
 		// Busco el nodoLista correspondiente
-		if ( buscarLista(raizListas,aux,voto.numeroLista-1) )
+		if ( buscarLista(raizListas,aux,voto.numeroLista) )
 		{
 			// procesar votos totales por lista.
 			aux->lista.cantVotosTotales++;
