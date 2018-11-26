@@ -100,7 +100,7 @@ void cargarCandidatos(sListas & auxLista);
 void cargarVotos();
 void leerListas();
 void procesarVotos(nodoListasVotadas * & raizListas);
-void asignarBancas(sListas lista);
+void asignarBancas(nodoListasVotadas * & raizListas);
 void ordenarListas(sListas lista[cantListas]);
 void mostrarTabla();
 void guardarParticipantes();
@@ -190,10 +190,7 @@ int main()
 	
 	mostrarLoteDePrueba(listadoListas);
 
-	for (int i = 0; i < cantListas; i++)
-	{
-		asignarBancas(listas[i]);
-	}
+	asignarBancas(listadoListas);
 
 	ordenarListas(listas);
 
@@ -814,25 +811,33 @@ void procesarVotos(nodoListasVotadas * & raizListas)
 	}
 }
 
-void asignarBancas(sListas lista) {
-
-	if (lista.porcentajeVotosValidos >= 3) // solo entran a banca los que superen el 3% de votos
-	{
-		bancas[lista.numeroLista - 1].cantBanca1 = lista.cantVotosValidos; // la primera banca tiene la mismca cantidad de votos
-
-		bancas[lista.numeroLista - 1].cantBanca2 = lista.cantVotosValidos / 2;
-		bancas[lista.numeroLista - 1].cantBanca3 = lista.cantVotosValidos / 3;
-		bancas[lista.numeroLista - 1].cantBanca4 = lista.cantVotosValidos / 4;
-		bancas[lista.numeroLista - 1].cantBanca5 = lista.cantVotosValidos / 5;
-		bancas[lista.numeroLista - 1].cantBanca6 = lista.cantVotosValidos / 6;
-		bancas[lista.numeroLista - 1].cantBanca7 = lista.cantVotosValidos / 7;
-		bancas[lista.numeroLista - 1].cantBanca8 = lista.cantVotosValidos / 8;
-		bancas[lista.numeroLista - 1].cantBanca9 = lista.cantVotosValidos / 9;
-		bancas[lista.numeroLista - 1].cantBanca10 = lista.cantVotosValidos / 10;
-		bancas[lista.numeroLista - 1].cantBanca11 = lista.cantVotosValidos / 11;
-		bancas[lista.numeroLista - 1].cantBanca12 = lista.cantVotosValidos / 12;
-		bancas[lista.numeroLista - 1].cantBanca13 = lista.cantVotosValidos / 13;
+void asignarBancas(nodoListasVotadas * & raizListas) {
+	
+	nodoListasVotadas * & aux = raizListas;
+	
+	while(aux != NULL){
+		if (aux->lista.porcentajeVotosValidos >= 3) // solo entran a banca los que superen el 3% de votos
+		{
+			bancas[aux->lista.numeroLista - 1].cantBanca1 = aux->lista.cantVotosValidos; // la primera banca tiene la mismca cantidad de votos
+	
+			bancas[aux->lista.numeroLista - 1].cantBanca2 = aux->lista.cantVotosValidos / 2;
+			bancas[aux->lista.numeroLista - 1].cantBanca3 = aux->lista.cantVotosValidos / 3;
+			bancas[aux->lista.numeroLista - 1].cantBanca4 = aux->lista.cantVotosValidos / 4;
+			bancas[aux->lista.numeroLista - 1].cantBanca5 = aux->lista.cantVotosValidos / 5;
+			bancas[aux->lista.numeroLista - 1].cantBanca6 = aux->lista.cantVotosValidos / 6;
+			bancas[aux->lista.numeroLista - 1].cantBanca7 = aux->lista.cantVotosValidos / 7;
+			bancas[aux->lista.numeroLista - 1].cantBanca8 = aux->lista.cantVotosValidos / 8;
+			bancas[aux->lista.numeroLista - 1].cantBanca9 = aux->lista.cantVotosValidos / 9;
+			bancas[aux->lista.numeroLista - 1].cantBanca10 = aux->lista.cantVotosValidos / 10;
+			bancas[aux->lista.numeroLista - 1].cantBanca11 = aux->lista.cantVotosValidos / 11;
+			bancas[aux->lista.numeroLista - 1].cantBanca12 = aux->lista.cantVotosValidos / 12;
+			bancas[aux->lista.numeroLista - 1].cantBanca13 = aux->lista.cantVotosValidos / 13;
+		}
+		
+		aux=aux->siguiente;
 	}
+
+	
 }
 
 
