@@ -99,7 +99,7 @@ void cargarListas();
 void cargarCandidatos(sListas & auxLista);
 void cargarVotos();
 void leerListas();
-void procesarVotos();
+void procesarVotos(nodoListasVotadas * & raizListas);
 void asignarBancas(sListas lista);
 void ordenarListas(sListas lista[cantListas]);
 void mostrarTabla();
@@ -177,6 +177,8 @@ void mostrarArchivos(){
 int main()
 {	
 	setlocale(LC_ALL, ""); //habilita caracteres latinos
+	
+	nodoListasVotadas * listadoListas = NULL;
 
 	inicializarListas();
 
@@ -184,7 +186,7 @@ int main()
 
 	cargarVotos();
 
-	procesarVotos();
+	procesarVotos(listadoListas);
 	
 	mostrarLoteDePrueba();
 
@@ -722,8 +724,8 @@ void cargarVotos()
 	fclose(a);	
 }
 
-// Guarda en un arreglo las listas desde un archivo
-void leerListas()
+// Guarda en una lista enlazada las listas desde un archivo
+void leerListas(nodoListasVotadas * & raizListas)
 {
 	sListas lista;
 	
@@ -734,8 +736,8 @@ void leerListas()
 	
 	while(!feof(a)){
 		
-		// Guardo en arreglo global la informacion del archivo
-		listas[lista.numeroLista-1] = lista;		
+		// Inserto en la lista ordenada por numero de lista
+		insertarOrdenadoListaVotadas(raizListas,lista,lista.numeroLista);
 		
 		fread(&lista,sizeof(sListas),1,a);
 	}
@@ -744,11 +746,13 @@ void leerListas()
 }
 
 // calcula los votos validos de cada lista, del total de listas y porcentaje
-void procesarVotos()
+void procesarVotos(nodoListasVotadas * & raizListas)
 {
-	leerListas();
+	leerListas(raizListas);
 	
 	sVotos voto;
+	nodoListasVotadas * aux ;
+	nodoListasVotadas * auxPorcentaje = raizListas; // Puntero auxiliar para recorrer y guardar porcentaje de votos votados
 	
 	// leer archivo votos
 	FILE *a = fopen(ARCHIVO_VOTOS,"rb");
@@ -757,35 +761,45 @@ void procesarVotos()
 	
 	while(!feof(a)){
 		
-		// procesar votos totales por lista.
-		listas[voto.numeroLista-1].cantVotosTotales++;
-		
-		// Proceso de votos validos
-		if (voto.tipoVoto >= 1 && voto.tipoVoto <= 7) {
-			listas[voto.numeroLista-1].cantVotosValidos++;
+		// Busco el nodoLista correspondiente
+		if ( buscarLista(raizListas,aux,voto.numeroLista-1) )
+		{
+			// procesar votos totales por lista.
+			aux->lista.cantVotosTotales++;
 			
-			// guardar en variable global cantTotalVotosValidos
-			cantTotalVotosValidos++;
+			// Proceso de votos validos
+			if (voto.tipoVoto >= 1 && voto.tipoVoto <= 7) {
+				aux->lista.cantVotosValidos++;
+				
+				// Guardo el voto en la lista de votos para esa lista.
+				insertarOrdenadoVotos(aux->infoVoto,voto,voto.edad);
+				
+				// guardar en variable global cantTotalVotosValidos
+				cantTotalVotosValidos++;
+				
+				// guardo edades
+				if(voto.edad < 18) aux->lista.hasta18++;
+				if(voto.edad >= 18 && voto.edad < 30) aux->lista.hasta30++;
+				if(voto.edad >= 30 && voto.edad < 50) aux->lista.hasta50++;
+				if(voto.edad >= 50) aux->lista.mas50++;
+				
+			} else {
 			
-			// guardo edades
-			if(voto.edad < 18) listas[voto.numeroLista-1].hasta18++;
-			if(voto.edad >= 18 && voto.edad < 30) listas[voto.numeroLista-1].hasta30++;
-			if(voto.edad >= 30 && voto.edad < 50) listas[voto.numeroLista-1].hasta50++;
-			if(voto.edad >= 50) listas[voto.numeroLista-1].mas50++;
-			
-		} else {
-		
-			// Proceso votos en blanco
-			if (voto.tipoVoto == 0) {
-				cantTotalVotosEnBlanco++;
-			}
-			
-			// Proceso votos nulos
-			if (voto.tipoVoto < 0 || voto.tipoVoto > 7) {
-				cantTotalVotosNulos++;
+				// Proceso votos en blanco
+				if (voto.tipoVoto == 0) {
+					cantTotalVotosEnBlanco++;
+				}
+				
+				// Proceso votos nulos
+				if (voto.tipoVoto < 0 || voto.tipoVoto > 7) {
+					cantTotalVotosNulos++;
+				}
+				
 			}
 			
 		}
+		
+		
 		
 		fread(&voto,sizeof(sVotos),1,a);
 	}
@@ -793,9 +807,10 @@ void procesarVotos()
 	fclose(a);
 	
 	// Proceso porcentaje de votos por lista.
-	for (int i = 0; i < cantListas; i++)
+	while (auxPorcentaje != NULL)
 	{
-		listas[i].porcentajeVotosValidos = (100 * listas[i].cantVotosValidos) / cantTotalVotosValidos;
+		auxPorcentaje->lista.porcentajeVotosValidos = (100 * auxPorcentaje->lista.cantVotosValidos) / cantTotalVotosValidos;
+		auxPorcentaje = auxPorcentaje->siguiente;
 	}
 }
 
