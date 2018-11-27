@@ -108,6 +108,7 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
 void mostrarListasPorEdad(nodoListasVotadas * raizListas);
 void setearColor(int rgb);
 void mostrarLoteDePrueba(nodoListasVotadas * & raizListas);
+void mostrarVotosPorSexoYlista(nodoListasVotadas * listasVotadas);
 // PROTOTIPOS LISTAS ENLAZADAS
 bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
 void insertarOrdInvertidoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
@@ -226,6 +227,35 @@ int main()
 	return 0;
 }
 
+//EJERCICIO 4.
+void mostrarVotosPorSexoYlista(nodoListasVotadas * listasVotadas)
+{
+	int votosVarones = 0;
+	int votosMujeres = 0;
+
+	while (listasVotadas != NULL) {
+		int auxClave =listasVotadas->clave;
+		while (auxClave == listasVotadas->clave)
+		{
+
+			while (listasVotadas->infoVoto != NULL) {
+				if (strcmp("Masculino", listasVotadas->infoVoto->voto.sexo) == 0) {
+					 votosVarones = votosVarones + 1;
+				}
+				else {
+					 votosMujeres = votosMujeres + 1;
+				}
+				listasVotadas->infoVoto = listasVotadas->infoVoto->siguiente;
+			}
+
+			cout << "Votos Mujeres Lista " << listasVotadas->lista.nombreLista << " : " << votosMujeres << endl;
+			cout << "Votos Varones Lista " << listasVotadas->lista.nombreLista << " : " << votosVarones << endl;
+			votosVarones = 0;
+			votosMujeres = 0;
+			listasVotadas = listasVotadas->siguiente;
+		}
+	}
+}
 //METODOS LISTAS ENLAZADAS
 
 bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave)
