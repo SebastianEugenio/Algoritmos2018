@@ -109,6 +109,7 @@ void mostrarListasPorEdad(nodoListasVotadas * raizListas);
 void setearColor(int rgb);
 void mostrarLoteDePrueba(nodoListasVotadas * & raizListas);
 void mostrarVotosPorSexoYlista(nodoListasVotadas * listasVotadas);
+void mostrarVotosPorEdad(nodoListasVotadas *listadoListas);
 // PROTOTIPOS LISTAS ENLAZADAS
 bool buscarEnLista(nodoListasVotadas * raiz,nodoListasVotadas * & aux,int clave);
 void insertarOrdInvertidoListaVotadas(nodoListasVotadas * & raiz,sListas lista,int clave);
@@ -221,10 +222,53 @@ int main()
 	mostrarTabla(listadoListas);
 
 	mostrarListasPorEdad(listadoListas);
+	
+	mostrarVotosPorEdad(listadoListas);
 
 	system("pause");
 
 	return 0;
+}
+
+//EJERCICIO 5
+void mostrarVotosPorEdad(nodoListasVotadas *listadoListas){
+	
+	nodoVotos* nodoVotosAux;
+	nodoVotos* nodoVotosPorEdad = NULL;
+	
+	while(listadoListas != NULL){
+		
+		nodoVotosAux = listadoListas->infoVoto;
+		
+		while(nodoVotosAux != NULL){
+			
+			insertarOrdenadoVotos(nodoVotosPorEdad, nodoVotosAux->voto, nodoVotosAux->voto.edad);
+			
+			nodoVotosAux = nodoVotosAux->siguiente;
+		}
+		
+		listadoListas = listadoListas->siguiente;
+	}
+	
+	setearColor(6);
+	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+	cout << "|                                              MOSTRAR VOTOS ORDENADOS POR EDAD                                              |\n";
+	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+	
+	cout << "|                            EDAD                              |                             SEXO                            |\n";
+	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+	
+	
+	while(nodoVotosPorEdad != NULL){
+		
+		setearColor(7);
+		//cout << "|                           " << nodoVotosPorEdad->voto.edad << "                              |                          " << nodoVotosPorEdad->voto.sexo << "|" <<endl;  
+		printf("|%62d|%61s|\n",nodoVotosPorEdad->voto.edad, nodoVotosPorEdad->voto.sexo);
+		nodoVotosPorEdad = nodoVotosPorEdad->siguiente;
+	}
+	
+	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
+	
 }
 
 //EJERCICIO 4.
@@ -1138,8 +1182,6 @@ void mostrarListasPorEdad(nodoListasVotadas * raizListas)
 		cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 		aux=aux->siguiente;
 	}
-
-
 
 }
 
