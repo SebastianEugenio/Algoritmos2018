@@ -94,66 +94,6 @@ void ordenarParticipantes(sGanadores ganadores[cantTotalParticipantes]);
 void mostrarListasPorEdad();
 void setearColor(int rgb);
 
-// func for debug 
-void mostrarLista(sListas lista){ 
-	 
-	printf("<-------- DEBUGGING -------->\n"); 
-	printf("Nombre lista: %s\n",lista.nombreLista); 
-	printf("numeroLista: %d\n",lista.numeroLista); 
-	printf("votos tot: %d\n",lista.cantVotosTotales); 
-	printf("votos val: %d\n",lista.cantVotosValidos); 
-	printf("% votos val: %d\n",lista.porcentajeVotosValidos); 
-	printf("votos hasta 18: %d\n",lista.hasta18); 
-	printf("votos hasta 30: %d\n",lista.hasta30); 
-	printf("votos hasta 50: %d\n",lista.hasta50); 
-	printf("votos mas de 50: %d\n",lista.mas50); 
-	
-	
-	printf("Candidatos:\n"); 
-	 
-  
-	for (int f = 0; f < cantCandidatos; f++)  
-	{  
-		printf("--> %s\n",lista.candidatos[f]); 
-	}   
-} 
-void mostrarVoto(sVotos voto){
-	printf("Voto lista: %d\n",voto.numeroLista);
-	printf("Voto tipo: %d\n",voto.tipoVoto);
-	printf("Voto sexo: %s\n",voto.sexo);
-	printf("Voto edad: %d\n",voto.edad);
-}
-void mostrarArchivos(){ 
-
-	sListas lista;
-	sVotos voto;
-	 
-	printf("<-------- DEBUGGING LISTA -------->\n"); 
-	
-	FILE * a = fopen(ARCHIVO_LISTAS,"rb");
-	fread(&lista,sizeof(sListas),1,a);
-	while(!feof(a)){
-		
-		mostrarLista(lista);
-		
-		fread(&lista,sizeof(sListas),1,a);
-	}
-	
-	fclose(a);
-	
-	
-	printf("<-------- DEBUGGING VOTOS -------->\n"); 
-	
-	FILE * b = fopen(ARCHIVO_VOTOS,"rb");
-	fread(&voto,sizeof(sVotos),1,b);
-	while(!feof(b)){
-		
-		mostrarVoto(voto);
-		
-		fread(&voto,sizeof(sVotos),1,b);
-	}
-	fclose(b);
-} 
 
 int main()
 {	
