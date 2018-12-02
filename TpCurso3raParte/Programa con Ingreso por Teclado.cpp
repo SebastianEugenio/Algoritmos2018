@@ -147,7 +147,9 @@ int main()
 	mostrarListasPorEdad(listadoListas);
 	
 	mostrarVotosPorEdad(listadoListas);
-
+	
+	mostrarVotosPorSexoYlista(listadoListas);
+	
 	system("pause");
 
 	return 0;
@@ -194,34 +196,44 @@ void mostrarVotosPorEdad(nodoListasVotadas *listadoListas){
 	
 }
 
-//EJERCICIO 4.
+//EJERCICIO 4
 void mostrarVotosPorSexoYlista(nodoListasVotadas * listasVotadas)
 {
 	int votosVarones = 0;
 	int votosMujeres = 0;
-
+	setearColor(6);
+cout << "\n\n+----------------------------------------------------------------------------------------------------------------------------+\n";
+	cout << "|                                           CANTIDAD DE VOTOS DE CADA SEXO POR LISTA                                         |\n";
+	cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";
 	while (listasVotadas != NULL) {
-		int auxClave =listasVotadas->clave;
+	
+		int auxClave = listasVotadas->clave;
 		while (auxClave == listasVotadas->clave)
 		{
 
 			while (listasVotadas->infoVoto != NULL) {
 				if (strcmp("Masculino", listasVotadas->infoVoto->voto.sexo) == 0) {
-					 votosVarones = votosVarones + 1;
+					votosVarones = votosVarones + 1;
 				}
 				else {
-					 votosMujeres = votosMujeres + 1;
+					votosMujeres = votosMujeres + 1;
 				}
 				listasVotadas->infoVoto = listasVotadas->infoVoto->siguiente;
 			}
+		setearColor(6);
 
-			cout << "Votos Mujeres Lista " << listasVotadas->lista.nombreLista << " : " << votosMujeres << endl;
-			cout << "Votos Varones Lista " << listasVotadas->lista.nombreLista << " : " << votosVarones << endl;
+	     printf("|                                              LISTA: %-71s|\n",listasVotadas->lista.nombreLista);
+
+	    setearColor(7);
+	    cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";                    
+	    	printf("| MUJERES :   %-42d|    VARONES:    %-52d|\n", votosMujeres, votosVarones);
+	    cout << "+----------------------------------------------------------------------------------------------------------------------------+\n";  
 			votosVarones = 0;
 			votosMujeres = 0;
 			listasVotadas = listasVotadas->siguiente;
 		}
 	}
+		  
 }
 //METODOS LISTAS ENLAZADAS
 
