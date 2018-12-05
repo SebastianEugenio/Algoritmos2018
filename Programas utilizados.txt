@@ -1,0 +1,5 @@
+Programas utilizados:
+
+- Visual Studio 2017
+- Dev-C++
+- Visio 2016
